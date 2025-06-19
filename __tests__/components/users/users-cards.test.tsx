@@ -126,7 +126,9 @@ describe('UsersCards', () => {
 
     render(<UsersCards users={[singleCharUser]} />)
     
-    expect(screen.getByText('A')).toBeInTheDocument()
+    // Should have exactly 2 instances of 'A' - one in avatar, one in name
+    const aElements = screen.getAllByText('A')
+    expect(aElements).toHaveLength(2)
   })
 
   it('handles multi-word names for initials correctly', () => {

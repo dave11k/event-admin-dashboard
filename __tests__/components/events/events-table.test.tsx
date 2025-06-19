@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { EventsTable } from '@/components/events/events-table'
 import type { Event } from '@/components/events/events-management'
 
@@ -90,7 +91,8 @@ describe('EventsTable', () => {
     expect(dropdownTriggers.length).toBeGreaterThan(0)
   })
 
-  it('calls onUpdateStatus when status is changed', () => {
+  it('calls onUpdateStatus when status is changed', async () => {
+    const user = userEvent.setup()
     render(<EventsTable {...mockProps} />)
     
     const actionButtons = screen.getAllByRole('button')
@@ -99,16 +101,17 @@ describe('EventsTable', () => {
     )
     
     if (firstDropdownTrigger) {
-      fireEvent.click(firstDropdownTrigger)
+      await user.click(firstDropdownTrigger)
       
-      const setOngoingOption = screen.getByText('Set as Ongoing')
-      fireEvent.click(setOngoingOption)
+      const setOngoingOption = await screen.findByText('Set as Ongoing')
+      await user.click(setOngoingOption)
       
       expect(mockProps.onUpdateStatus).toHaveBeenCalledWith('1', 'Ongoing')
     }
   })
 
-  it('calls onDeleteEvent when delete is clicked', () => {
+  it('calls onDeleteEvent when delete is clicked', async () => {
+    const user = userEvent.setup()
     render(<EventsTable {...mockProps} />)
     
     const actionButtons = screen.getAllByRole('button')
@@ -117,10 +120,10 @@ describe('EventsTable', () => {
     )
     
     if (firstDropdownTrigger) {
-      fireEvent.click(firstDropdownTrigger)
+      await user.click(firstDropdownTrigger)
       
-      const deleteOption = screen.getByText('Delete Event')
-      fireEvent.click(deleteOption)
+      const deleteOption = await screen.findByText('Delete Event')
+      await user.click(deleteOption)
       
       expect(mockProps.onDeleteEvent).toHaveBeenCalledWith('1')
     }

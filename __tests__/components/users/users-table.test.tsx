@@ -79,14 +79,14 @@ describe('UsersTable', () => {
     expect(screen.getByText('JS')).toBeInTheDocument()
   })
 
-  it('renders search input and calls setSearchQuery', async () => {
-    const user = userEvent.setup()
+  it('renders search input and calls setSearchQuery', () => {
     render(<UsersTable {...mockProps} />)
     
     const searchInput = screen.getByPlaceholderText('Search users...')
     expect(searchInput).toBeInTheDocument()
     
-    await user.type(searchInput, 'John')
+    // Use fireEvent.change to set the value directly
+    fireEvent.change(searchInput, { target: { value: 'John' } })
     
     expect(mockProps.setSearchQuery).toHaveBeenCalledWith('John')
   })

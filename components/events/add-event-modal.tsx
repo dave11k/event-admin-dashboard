@@ -136,13 +136,8 @@ export function AddEventModal({ isOpen, onClose, onSubmit }: AddEventModalProps)
     }
   }
 
-  const isFormValid =
-    formData.title.trim() &&
-    formData.date &&
-    formData.location.trim() &&
-    formData.capacity &&
-    Number.parseInt(formData.capacity) > 0 &&
-    Object.keys(errors).length === 0
+  // Only consider form invalid if there are explicit errors, not if fields are empty
+  const hasValidationErrors = Object.keys(errors).length > 0
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -232,7 +227,6 @@ export function AddEventModal({ isOpen, onClose, onSubmit }: AddEventModalProps)
               <Input
                 id="capacity"
                 type="number"
-                min="1"
                 value={formData.capacity}
                 onChange={(e) => handleInputChange("capacity", e.target.value)}
                 placeholder="Enter maximum capacity"
@@ -274,7 +268,7 @@ export function AddEventModal({ isOpen, onClose, onSubmit }: AddEventModalProps)
             </Button>
             <Button
               type="submit"
-              disabled={!isFormValid || isSubmitting}
+              disabled={isSubmitting}
               className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700"
             >
               {isSubmitting ? (

@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom'
 
-// Extend Jest matchers for TypeScript
 declare global {
   namespace jest {
     interface Matchers<R> {
@@ -8,4 +7,4 @@ declare global {
       toHaveClass(...classNames: string[]): R
     }
   }
-}
+} 

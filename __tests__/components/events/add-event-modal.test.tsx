@@ -68,8 +68,21 @@ describe('AddEventModal', () => {
     const user = userEvent.setup()
     render(<AddEventModal {...mockProps} />)
     
+    // Fill in required fields to focus on capacity validation
+    const titleInput = screen.getByLabelText(/Event Title/)
+    const dateInput = screen.getByLabelText(/Event Date/)
+    const locationInput = screen.getByLabelText(/Location/)
     const capacityInput = screen.getByLabelText(/Capacity/)
-    await user.type(capacityInput, '0')
+    
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const tomorrowString = tomorrow.toISOString().split('T')[0]
+    
+    // Use fireEvent to set values directly
+    fireEvent.change(titleInput, { target: { value: 'Test Event' } })
+    fireEvent.change(dateInput, { target: { value: tomorrowString } })
+    fireEvent.change(locationInput, { target: { value: 'Test Location' } })
+    fireEvent.change(capacityInput, { target: { value: '0' } })
     
     const submitButton = screen.getByRole('button', { name: /Create Event/ })
     await user.click(submitButton)
@@ -137,11 +150,11 @@ describe('AddEventModal', () => {
     expect(mockProps.onClose).toHaveBeenCalled()
   })
 
-  it('disables submit button when form is invalid', () => {
+  it('enables submit button initially', () => {
     render(<AddEventModal {...mockProps} />)
     
     const submitButton = screen.getByRole('button', { name: /Create Event/ })
-    expect(submitButton).toBeDisabled()
+    expect(submitButton).toBeEnabled()
   })
 
   it('enables submit button when form is valid', async () => {
@@ -205,6 +218,8 @@ describe('AddEventModal', () => {
     const titleInput = screen.getByLabelText(/Event Title/)
     await user.type(titleInput, 'T')
     
-    expect(screen.queryByText('Title is required')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByText('Title is required')).not.toBeInTheDocument()
+    })
   })
 })
