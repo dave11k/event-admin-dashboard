@@ -2,6 +2,20 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AddEventModal } from '@/components/events/add-event-modal'
 
+// Setup global TextEncoder/TextDecoder for Node.js environment
+const { TextEncoder, TextDecoder } = require('util')
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder
+
+// Mock Next.js cache and server actions
+jest.mock('next/cache', () => ({
+  unstable_cache: jest.fn((fn) => fn),
+}))
+
+jest.mock('@/lib/actions/events', () => ({
+  addEvent: jest.fn()
+}))
+
 const mockProps = {
   isOpen: true,
   onClose: jest.fn(),

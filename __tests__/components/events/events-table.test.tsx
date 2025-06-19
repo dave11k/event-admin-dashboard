@@ -106,7 +106,7 @@ describe('EventsTable', () => {
       const setOngoingOption = await screen.findByText('Set as Ongoing')
       await user.click(setOngoingOption)
       
-      expect(mockProps.onUpdateStatus).toHaveBeenCalledWith('1', 'Ongoing')
+      expect(mockProps.onUpdateStatus).toHaveBeenCalledWith('1', 'ongoing')
     }
   })
 
