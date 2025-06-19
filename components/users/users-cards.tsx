@@ -10,11 +10,11 @@ interface UsersCardsProps {
 }
 
 const statusColors = {
-  Upcoming: "bg-blue-100 text-blue-800 border-blue-200",
-  Ongoing: "bg-orange-100 text-orange-800 border-orange-200",
-  Completed: "bg-green-100 text-green-800 border-green-200",
-  Cancelled: "bg-red-100 text-red-800 border-red-200",
-}
+  upcoming: "bg-blue-100 text-blue-800 border-blue-200",
+  ongoing: "bg-orange-100 text-orange-800 border-orange-200",
+  completed: "bg-green-100 text-green-800 border-green-200",
+  cancelled: "bg-red-100 text-red-800 border-red-200",
+} as const
 
 export function UsersCards({ users }: UsersCardsProps) {
   const formatDate = (dateString: string) => {
@@ -61,7 +61,7 @@ export function UsersCards({ users }: UsersCardsProps) {
                     </a>
                   </div>
                   <Badge className={statusColors[user.eventStatus]} variant="outline">
-                    {user.eventStatus}
+                    {user.eventStatus.charAt(0).toUpperCase() + user.eventStatus.slice(1)}
                   </Badge>
                 </div>
 

@@ -40,13 +40,14 @@ export default async function TestPage() {
         </div>
       </div>
     )
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
     return (
       <div className="p-8">
         <h1 className="text-2xl font-bold mb-4">Database Connection Test</h1>
         
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          ❌ Database connection failed: {error.message}
+          ❌ Database connection failed: {errorMessage}
         </div>
       </div>
     )

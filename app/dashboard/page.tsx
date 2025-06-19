@@ -1,8 +1,14 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { MetricCards } from "@/components/dashboard/metric-cards"
 import { ChartsSection } from "@/components/dashboard/charts-section"
+import { getDashboardMetrics, getEventsWithRegistrationCounts, getEventStatusCounts } from "@/lib/queries/dashboard"
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const [metrics, eventsWithCounts, eventStatusCounts] = await Promise.all([
+    getDashboardMetrics(),
+    getEventsWithRegistrationCounts(),
+    getEventStatusCounts()
+  ])
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -13,10 +19,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Metric Cards */}
-        <MetricCards />
+        <MetricCards metrics={metrics} />
 
         {/* Charts Section */}
-        <ChartsSection />
+        <ChartsSection eventsWithCounts={eventsWithCounts} eventStatusCounts={eventStatusCounts} />
       </div>
     </DashboardLayout>
   )

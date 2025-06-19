@@ -38,8 +38,9 @@ export default function LoginPage() {
         router.push('/dashboard')
         router.refresh()
       }
-    } catch (error: any) {
-      toast.error(error.message)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }

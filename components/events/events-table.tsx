@@ -20,11 +20,11 @@ interface EventsTableProps {
 }
 
 const statusColors = {
-  Upcoming: "bg-blue-100 text-blue-800 border-blue-200",
-  Ongoing: "bg-orange-100 text-orange-800 border-orange-200",
-  Completed: "bg-green-100 text-green-800 border-green-200",
-  Cancelled: "bg-red-100 text-red-800 border-red-200",
-}
+  upcoming: "bg-blue-100 text-blue-800 border-blue-200",
+  ongoing: "bg-orange-100 text-orange-800 border-orange-200",
+  completed: "bg-green-100 text-green-800 border-green-200",
+  cancelled: "bg-red-100 text-red-800 border-red-200",
+} as const
 
 export function EventsTable({ events, onUpdateStatus, onDeleteEvent }: EventsTableProps) {
   const filteredEvents = events // Remove filtering here since it's now done at parent level
@@ -111,7 +111,7 @@ export function EventsTable({ events, onUpdateStatus, onDeleteEvent }: EventsTab
                     </TableCell>
                     <TableCell>
                       <Badge className={statusColors[event.status]} variant="outline">
-                        {event.status}
+                        {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -133,19 +133,19 @@ export function EventsTable({ events, onUpdateStatus, onDeleteEvent }: EventsTab
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="flex items-center gap-2"
-                            onClick={() => onUpdateStatus(event.id, "Upcoming")}
+                            onClick={() => onUpdateStatus(event.id, "upcoming")}
                           >
                             Set as Upcoming
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="flex items-center gap-2"
-                            onClick={() => onUpdateStatus(event.id, "Ongoing")}
+                            onClick={() => onUpdateStatus(event.id, "ongoing")}
                           >
                             Set as Ongoing
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="flex items-center gap-2"
-                            onClick={() => onUpdateStatus(event.id, "Completed")}
+                            onClick={() => onUpdateStatus(event.id, "completed")}
                           >
                             Set as Completed
                           </DropdownMenuItem>

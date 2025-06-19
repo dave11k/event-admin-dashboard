@@ -9,69 +9,45 @@ import { useToast } from "@/hooks/use-toast"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { EventWithRegistrations } from "@/lib/queries/events"
+import { updateEventStatusAction, deleteEventAction } from "@/lib/actions/events"
 
+// UI compatible event interface
 export interface Event {
   id: string
   title: string
-  description?: string
+  description?: string | null
   date: string
-  location: string
+  location: string | null
   capacity: number
-  status: "Upcoming" | "Ongoing" | "Completed" | "Cancelled"
+  status: "upcoming" | "ongoing" | "completed" | "cancelled"
   registeredUsers: number
   createdAt: string
 }
 
-// Mock events data
-const mockEvents: Event[] = [
-  {
-    id: "1",
-    title: "Tech Conference 2024",
-    description: "Annual technology conference featuring the latest innovations",
-    date: "2024-07-15",
-    location: "San Francisco Convention Center",
-    capacity: 500,
-    status: "Upcoming",
-    registeredUsers: 245,
-    createdAt: "2024-01-15",
-  },
-  {
-    id: "2",
-    title: "Music Festival",
-    description: "Three-day music festival with top artists",
-    date: "2024-08-20",
-    location: "Golden Gate Park",
-    capacity: 1000,
-    status: "Upcoming",
-    registeredUsers: 189,
-    createdAt: "2024-02-01",
-  },
-  {
-    id: "3",
-    title: "Food & Wine Expo",
-    description: "Culinary experience with local chefs and wineries",
-    date: "2024-06-10",
-    location: "Napa Valley",
-    capacity: 300,
-    status: "Ongoing",
-    registeredUsers: 167,
-    createdAt: "2024-01-20",
-  },
-  {
-    id: "4",
-    title: "Art Gallery Opening",
-    description: "Contemporary art exhibition opening night",
-    date: "2024-05-25",
-    location: "MOMA",
-    capacity: 200,
-    status: "Completed",
-    registeredUsers: 134,
-    createdAt: "2024-01-10",
-  },
-]
+interface EventsManagementProps {
+  initialEvents: EventWithRegistrations[]
+}
 
-export function EventsManagement() {
-  const [events, setEvents] = useState<Event[]>(mockEvents)
+// Helper function to convert Supabase event to UI event
+function convertToUIEvent(event: EventWithRegistrations): Event {
+  return {
+    id: event.id,
+    title: event.title,
+    description: event.description,
+    date: event.date,
+    location: event.location,
+    capacity: event.capacity,
+    status: event.status,
+    registeredUsers: event.registrationCount,
+    createdAt: event.created_at.split('T')[0], // Format date
+  }
+}
+
+export function EventsManagement({ initialEvents }: EventsManagementProps) {
+  const [events, setEvents] = useState<Event[]>(
+    initialEvents.map(convertToUIEvent)
+  )
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const { toast } = useToast()
 
@@ -92,24 +68,23 @@ export function EventsManagement() {
     })
   }, [events, searchQuery, statusFilter])
 
-  const handleAddEvent = (newEvent: Omit<Event, "id" | "registeredUsers" | "createdAt">) => {
-    const event: Event = {
-      ...newEvent,
-      id: Date.now().toString(),
-      registeredUsers: 0,
-      createdAt: new Date().toISOString().split("T")[0],
-    }
-
-    setEvents((prev) => [event, ...prev])
-    setIsAddModalOpen(false)
-
-    toast({
-      title: "Event Created Successfully",
-      description: `${newEvent.title} has been added to your events.`,
-    })
+  const handleEventCreated = () => {
+    // Refresh the page to show the new event
+    window.location.reload()
   }
 
-  const handleUpdateEventStatus = (eventId: string, newStatus: Event["status"]) => {
+  const handleUpdateEventStatus = async (eventId: string, newStatus: Event["status"]) => {
+    const result = await updateEventStatusAction(eventId, newStatus)
+    
+    if (result.error) {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      })
+      return
+    }
+    
     setEvents((prev) => prev.map((event) => (event.id === eventId ? { ...event, status: newStatus } : event)))
 
     toast({
@@ -118,8 +93,20 @@ export function EventsManagement() {
     })
   }
 
-  const handleDeleteEvent = (eventId: string) => {
+  const handleDeleteEvent = async (eventId: string) => {
     const eventToDelete = events.find((e) => e.id === eventId)
+    
+    const result = await deleteEventAction(eventId)
+    
+    if (result.error) {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      })
+      return
+    }
+    
     setEvents((prev) => prev.filter((event) => event.id !== eventId))
 
     toast({
@@ -180,10 +167,10 @@ export function EventsManagement() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="Upcoming">Upcoming</SelectItem>
-                  <SelectItem value="Ongoing">Ongoing</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
-                  <SelectItem value="Cancelled">Cancelled</SelectItem>
+                  <SelectItem value="upcoming">Upcoming</SelectItem>
+                  <SelectItem value="ongoing">Ongoing</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -195,7 +182,7 @@ export function EventsManagement() {
       <EventsTable events={filteredEvents} onUpdateStatus={handleUpdateEventStatus} onDeleteEvent={handleDeleteEvent} />
 
       {/* Add Event Modal */}
-      <AddEventModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSubmit={handleAddEvent} />
+      <AddEventModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onEventCreated={handleEventCreated} />
     </div>
   )
 }

@@ -13,11 +13,6 @@ interface UsersTableProps {
   users: User[]
   searchQuery: string
   setSearchQuery: (query: string) => void
-  eventFilter: string
-  setEventFilter: (filter: string) => void
-  statusFilter: string
-  setStatusFilter: (filter: string) => void
-  uniqueEvents: string[]
   totalCount: number
 }
 
@@ -25,21 +20,16 @@ type SortField = "name" | "registeredDate"
 type SortDirection = "asc" | "desc"
 
 const statusColors = {
-  Upcoming: "bg-blue-100 text-blue-800 border-blue-200",
-  Ongoing: "bg-orange-100 text-orange-800 border-orange-200",
-  Completed: "bg-green-100 text-green-800 border-green-200",
-  Cancelled: "bg-red-100 text-red-800 border-red-200",
-}
+  upcoming: "bg-blue-100 text-blue-800 border-blue-200",
+  ongoing: "bg-orange-100 text-orange-800 border-orange-200",
+  completed: "bg-green-100 text-green-800 border-green-200",
+  cancelled: "bg-red-100 text-red-800 border-red-200",
+} as const
 
 export function UsersTable({
   users,
   searchQuery,
   setSearchQuery,
-  eventFilter,
-  setEventFilter,
-  statusFilter,
-  setStatusFilter,
-  uniqueEvents,
   totalCount,
 }: UsersTableProps) {
   const [sortField, setSortField] = useState<SortField>("registeredDate")
@@ -169,7 +159,7 @@ export function UsersTable({
                   </TableCell>
                   <TableCell>
                     <Badge className={statusColors[user.eventStatus]} variant="outline">
-                      {user.eventStatus}
+                      {user.eventStatus.charAt(0).toUpperCase() + user.eventStatus.slice(1)}
                     </Badge>
                   </TableCell>
                   <TableCell>

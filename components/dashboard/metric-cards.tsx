@@ -1,56 +1,50 @@
-"use client"
-
 import { Calendar, Clock, Users, DollarSign } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { DashboardMetrics } from "@/lib/queries/dashboard"
 
-// Mock data - replace with real API calls
-const mockData = {
-  totalEvents: 24,
-  upcomingEvents: 8,
-  totalUsers: 1247,
-  estimatedRevenue: 12470,
+interface MetricCardsProps {
+  metrics: DashboardMetrics
 }
 
-const metrics = [
-  {
-    title: "Total Events",
-    value: mockData.totalEvents,
-    icon: Calendar,
-    color: "blue",
-    bgGradient: "from-blue-50 to-blue-100",
-    iconColor: "text-blue-600",
-    textColor: "text-blue-900",
-  },
-  {
-    title: "Upcoming Events",
-    value: mockData.upcomingEvents,
-    icon: Clock,
-    color: "purple",
-    bgGradient: "from-purple-50 to-purple-100",
-    iconColor: "text-purple-600",
-    textColor: "text-purple-900",
-  },
-  {
-    title: "Total Registered Users",
-    value: mockData.totalUsers.toLocaleString(),
-    icon: Users,
-    color: "green",
-    bgGradient: "from-green-50 to-green-100",
-    iconColor: "text-green-600",
-    textColor: "text-green-900",
-  },
-  {
-    title: "Estimated Revenue",
-    value: `$${mockData.estimatedRevenue.toLocaleString()}`,
-    icon: DollarSign,
-    color: "yellow",
-    bgGradient: "from-yellow-50 to-yellow-100",
-    iconColor: "text-yellow-600",
-    textColor: "text-yellow-900",
-  },
-]
-
-export function MetricCards() {
+export function MetricCards({ metrics: data }: MetricCardsProps) {
+  const metrics = [
+    {
+      title: "Total Events",
+      value: data.totalEvents,
+      icon: Calendar,
+      color: "blue",
+      bgGradient: "from-blue-50 to-blue-100",
+      iconColor: "text-blue-600",
+      textColor: "text-blue-900",
+    },
+    {
+      title: "Upcoming Events",
+      value: data.upcomingEvents,
+      icon: Clock,
+      color: "purple",
+      bgGradient: "from-purple-50 to-purple-100",
+      iconColor: "text-purple-600",
+      textColor: "text-purple-900",
+    },
+    {
+      title: "Total Registered Users",
+      value: data.totalUsers.toLocaleString(),
+      icon: Users,
+      color: "green",
+      bgGradient: "from-green-50 to-green-100",
+      iconColor: "text-green-600",
+      textColor: "text-green-900",
+    },
+    {
+      title: "Estimated Revenue",
+      value: `$${data.estimatedRevenue.toLocaleString()}`,
+      icon: DollarSign,
+      color: "yellow",
+      bgGradient: "from-yellow-50 to-yellow-100",
+      iconColor: "text-yellow-600",
+      textColor: "text-yellow-900",
+    },
+  ]
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {metrics.map((metric, index) => (

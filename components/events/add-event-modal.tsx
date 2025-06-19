@@ -3,19 +3,21 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Calendar, MapPin, Users, FileText } from "lucide-react"
+import { Calendar, MapPin, Users, FileText, DollarSign } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { createEventAction } from "@/lib/actions/events"
+import { useToast } from "@/hooks/use-toast"
 import type { Event } from "./events-management"
 
 interface AddEventModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (event: Omit<Event, "id" | "registeredUsers" | "createdAt">) => void
+  onEventCreated: () => void
 }
 
 interface FormData {
@@ -24,6 +26,7 @@ interface FormData {
   date: string
   location: string
   capacity: string
+  price: string
   status: Event["status"]
 }
 
@@ -32,16 +35,19 @@ interface FormErrors {
   date?: string
   location?: string
   capacity?: string
+  price?: string
 }
 
-export function AddEventModal({ isOpen, onClose, onSubmit }: AddEventModalProps) {
+export function AddEventModal({ isOpen, onClose, onEventCreated }: AddEventModalProps) {
+  const { toast } = useToast()
   const [formData, setFormData] = useState<FormData>({
     title: "",
     description: "",
     date: "",
     location: "",
     capacity: "",
-    status: "Upcoming",
+    price: "",
+    status: "upcoming",
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -83,6 +89,16 @@ export function AddEventModal({ isOpen, onClose, onSubmit }: AddEventModalProps)
       }
     }
 
+    // Price validation
+    if (!formData.price) {
+      newErrors.price = "Price is required"
+    } else {
+      const price = Number.parseFloat(formData.price)
+      if (isNaN(price) || price < 0) {
+        newErrors.price = "Price must be 0 or greater"
+      }
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -96,21 +112,42 @@ export function AddEventModal({ isOpen, onClose, onSubmit }: AddEventModalProps)
 
     setIsSubmitting(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      const formDataObj = new FormData()
+      formDataObj.append('title', formData.title.trim())
+      formDataObj.append('description', formData.description.trim())
+      formDataObj.append('date', formData.date)
+      formDataObj.append('location', formData.location.trim())
+      formDataObj.append('capacity', formData.capacity)
+      formDataObj.append('price', formData.price)
 
-    const eventData = {
-      title: formData.title.trim(),
-      description: formData.description.trim() || undefined,
-      date: formData.date,
-      location: formData.location.trim(),
-      capacity: Number.parseInt(formData.capacity),
-      status: formData.status,
+      const result = await createEventAction(formDataObj)
+
+      if (result.error) {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive",
+        })
+        return
+      }
+
+      toast({
+        title: "Event Created Successfully",
+        description: `${formData.title} has been added to your events.`,
+      })
+
+      handleClose()
+      onEventCreated()
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to create event. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
     }
-
-    onSubmit(eventData)
-    handleClose()
-    setIsSubmitting(false)
   }
 
   const handleClose = () => {
@@ -120,7 +157,8 @@ export function AddEventModal({ isOpen, onClose, onSubmit }: AddEventModalProps)
       date: "",
       location: "",
       capacity: "",
-      status: "Upcoming",
+      price: "",
+      status: "upcoming",
     })
     setErrors({})
     setIsSubmitting(false)
@@ -135,9 +173,6 @@ export function AddEventModal({ isOpen, onClose, onSubmit }: AddEventModalProps)
       setErrors((prev) => ({ ...prev, [field]: undefined }))
     }
   }
-
-  // Only consider form invalid if there are explicit errors, not if fields are empty
-  const hasValidationErrors = Object.keys(errors).length > 0
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -216,8 +251,8 @@ export function AddEventModal({ isOpen, onClose, onSubmit }: AddEventModalProps)
             </div>
           </div>
 
-          {/* Capacity and Status Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Capacity, Price and Status Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Capacity */}
             <div className="space-y-2">
               <Label htmlFor="capacity" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -235,6 +270,24 @@ export function AddEventModal({ isOpen, onClose, onSubmit }: AddEventModalProps)
               {errors.capacity && <p className="text-sm text-red-600">{errors.capacity}</p>}
             </div>
 
+            {/* Price */}
+            <div className="space-y-2">
+              <Label htmlFor="price" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <DollarSign className="h-4 w-4" />
+                Price *
+              </Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) => handleInputChange("price", e.target.value)}
+                placeholder="Enter ticket price"
+                className={errors.price ? "border-red-500 focus:border-red-500" : ""}
+              />
+              {errors.price && <p className="text-sm text-red-600">{errors.price}</p>}
+            </div>
+
             {/* Status */}
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700">Status</Label>
@@ -246,10 +299,10 @@ export function AddEventModal({ isOpen, onClose, onSubmit }: AddEventModalProps)
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Upcoming">Upcoming</SelectItem>
-                  <SelectItem value="Ongoing">Ongoing</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
-                  <SelectItem value="Cancelled">Cancelled</SelectItem>
+                  <SelectItem value="upcoming">Upcoming</SelectItem>
+                  <SelectItem value="ongoing">Ongoing</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
             </div>

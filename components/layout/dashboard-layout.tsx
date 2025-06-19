@@ -35,8 +35,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       toast.success("Signed out successfully")
       router.push("/login")
       router.refresh()
-    } catch (error: any) {
-      toast.error("Error signing out: " + error.message)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+      toast.error("Error signing out: " + errorMessage)
     }
   }
 
