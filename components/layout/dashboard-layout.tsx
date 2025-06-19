@@ -4,10 +4,12 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Calendar, Users, BarChart3, Menu, X, LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { createClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
@@ -22,6 +24,21 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+  const supabase = createClient()
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+      
+      toast.success("Signed out successfully")
+      router.push("/login")
+      router.refresh()
+    } catch (error: any) {
+      toast.error("Error signing out: " + error.message)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -88,6 +105,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                onClick={handleSignOut}
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out
