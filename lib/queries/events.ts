@@ -51,6 +51,24 @@ export async function createEvent(eventData: NewEvent): Promise<Event | null> {
   return data
 }
 
+export async function updateEvent(eventId: string, eventData: Partial<NewEvent>): Promise<Event | null> {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase
+    .from('events')
+    .update({ ...eventData, updated_at: new Date().toISOString() })
+    .eq('id', eventId)
+    .select()
+    .single()
+  
+  if (error) {
+    console.error('Error updating event:', error)
+    return null
+  }
+  
+  return data
+}
+
 export async function updateEventStatus(eventId: string, status: Event['status']): Promise<boolean> {
   const supabase = await createClient()
   

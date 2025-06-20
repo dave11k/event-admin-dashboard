@@ -17,6 +17,7 @@ interface EventsTableProps {
   events: Event[]
   onUpdateStatus: (eventId: string, status: Event["status"]) => void
   onDeleteEvent: (eventId: string) => void
+  onEditEvent: (event: Event) => void
 }
 
 const statusColors = {
@@ -26,7 +27,7 @@ const statusColors = {
   cancelled: "bg-red-100 text-red-800 border-red-200",
 } as const
 
-export function EventsTable({ events, onUpdateStatus, onDeleteEvent }: EventsTableProps) {
+export function EventsTable({ events, onUpdateStatus, onDeleteEvent, onEditEvent }: EventsTableProps) {
   const filteredEvents = events // Remove filtering here since it's now done at parent level
 
   const formatDate = (dateString: string) => {
@@ -122,36 +123,39 @@ export function EventsTable({ events, onUpdateStatus, onDeleteEvent }: EventsTab
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem className="flex items-center gap-2">
+                          <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
                             <Eye className="h-4 w-4" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="flex items-center gap-2">
+                          <DropdownMenuItem 
+                            className="flex items-center gap-2 cursor-pointer"
+                            onClick={() => onEditEvent(event)}
+                          >
                             <Edit className="h-4 w-4" />
                             Edit Event
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 cursor-pointer"
                             onClick={() => onUpdateStatus(event.id, "upcoming")}
                           >
                             Set as Upcoming
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 cursor-pointer"
                             onClick={() => onUpdateStatus(event.id, "ongoing")}
                           >
                             Set as Ongoing
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 cursor-pointer"
                             onClick={() => onUpdateStatus(event.id, "completed")}
                           >
                             Set as Completed
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
-                            className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
                             onClick={() => onDeleteEvent(event.id)}
                           >
                             <Trash2 className="h-4 w-4" />

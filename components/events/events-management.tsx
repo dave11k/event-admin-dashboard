@@ -48,7 +48,13 @@ export function EventsManagement({ initialEvents }: EventsManagementProps) {
   const [events, setEvents] = useState<Event[]>(
     initialEvents.map(convertToUIEvent)
   )
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean
+    editingEvent?: Event | null
+  }>({
+    isOpen: false,
+    editingEvent: null
+  })
   const { toast } = useToast()
 
   const [searchQuery, setSearchQuery] = useState("")
@@ -69,9 +75,23 @@ export function EventsManagement({ initialEvents }: EventsManagementProps) {
   }, [events, searchQuery, statusFilter])
 
   const handleEventCreated = (newEvent: Event) => {
-    // Add the new event to the state instead of reloading
     setEvents(prev => [newEvent, ...prev])
-    setIsAddModalOpen(false)
+    // Close modal after a small delay to prevent flash
+    setTimeout(() => {
+      setModalState({ isOpen: false, editingEvent: null })
+    }, 100)
+  }
+
+  const handleEditEvent = (event: Event) => {
+    setModalState({ isOpen: true, editingEvent: event })
+  }
+
+  const handleEventUpdated = (updatedEvent: Event) => {
+    setEvents(prev => prev.map(event => event.id === updatedEvent.id ? updatedEvent : event))
+    // Close modal after a small delay to prevent flash
+    setTimeout(() => {
+      setModalState({ isOpen: false, editingEvent: null })
+    }, 100)
   }
 
   const handleUpdateEventStatus = async (eventId: string, newStatus: Event["status"]) => {
@@ -125,7 +145,7 @@ export function EventsManagement({ initialEvents }: EventsManagementProps) {
           <h1 className="text-3xl font-bold text-gray-900">Event Management</h1>
           <p className="text-gray-600 mt-1">Create, manage, and track all your events</p>
         </div>
-        <Button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2">
+        <Button onClick={() => setModalState({ isOpen: true, editingEvent: null })} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           Add New Event
         </Button>
@@ -180,10 +200,16 @@ export function EventsManagement({ initialEvents }: EventsManagementProps) {
       </Card>
 
       {/* Events Table */}
-      <EventsTable events={filteredEvents} onUpdateStatus={handleUpdateEventStatus} onDeleteEvent={handleDeleteEvent} />
+      <EventsTable events={filteredEvents} onUpdateStatus={handleUpdateEventStatus} onDeleteEvent={handleDeleteEvent} onEditEvent={handleEditEvent} />
 
-      {/* Add Event Modal */}
-      <AddEventModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onEventCreated={handleEventCreated} />
+      {/* Event Modal */}
+      <AddEventModal 
+        isOpen={modalState.isOpen} 
+        onClose={() => setModalState({ isOpen: false, editingEvent: null })} 
+        onEventCreated={handleEventCreated}
+        editingEvent={modalState.editingEvent}
+        onEventUpdated={handleEventUpdated}
+      />
     </div>
   )
 }

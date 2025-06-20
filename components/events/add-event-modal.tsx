@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Calendar, MapPin, Users, FileText, DollarSign } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { createEventAction } from "@/lib/actions/events"
+import { createEventAction, updateEventAction } from "@/lib/actions/events"
 import { useToast } from "@/hooks/use-toast"
 import type { Event } from "./events-management"
 
@@ -18,6 +18,8 @@ interface AddEventModalProps {
   isOpen: boolean
   onClose: () => void
   onEventCreated: (newEvent: Event) => void
+  editingEvent?: Event | null
+  onEventUpdated?: (updatedEvent: Event) => void
 }
 
 interface FormData {
@@ -38,7 +40,7 @@ interface FormErrors {
   price?: string
 }
 
-export function AddEventModal({ isOpen, onClose, onEventCreated }: AddEventModalProps) {
+export function AddEventModal({ isOpen, onClose, onEventCreated, editingEvent, onEventUpdated }: AddEventModalProps) {
   const { toast } = useToast()
   const [formData, setFormData] = useState<FormData>({
     title: "",
@@ -52,6 +54,33 @@ export function AddEventModal({ isOpen, onClose, onEventCreated }: AddEventModal
 
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const isEditMode = Boolean(editingEvent)
+
+  // Initialize form data when editing
+  useEffect(() => {
+    if (editingEvent) {
+      setFormData({
+        title: editingEvent.title,
+        description: editingEvent.description || "",
+        date: editingEvent.date,
+        location: editingEvent.location || "",
+        capacity: editingEvent.capacity.toString(),
+        price: "0", // We'll add price to Event interface later
+        status: editingEvent.status,
+      })
+    } else {
+      setFormData({
+        title: "",
+        description: "",
+        date: "",
+        location: "",
+        capacity: "",
+        price: "",
+        status: "upcoming",
+      })
+    }
+  }, [editingEvent])
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -120,8 +149,14 @@ export function AddEventModal({ isOpen, onClose, onEventCreated }: AddEventModal
       formDataObj.append('location', formData.location.trim())
       formDataObj.append('capacity', formData.capacity)
       formDataObj.append('price', formData.price)
+      formDataObj.append('status', formData.status)
 
-      const result = await createEventAction(formDataObj)
+      let result
+      if (isEditMode && editingEvent) {
+        result = await updateEventAction(editingEvent.id, formDataObj)
+      } else {
+        result = await createEventAction(formDataObj)
+      }
 
       if (result.error) {
         toast({
@@ -132,30 +167,49 @@ export function AddEventModal({ isOpen, onClose, onEventCreated }: AddEventModal
         return
       }
 
-      // Create the new event object for optimistic update
-      const newEvent: Event = {
-        id: result.data?.id || Date.now().toString(),
-        title: formData.title.trim(),
-        description: formData.description.trim() || null,
-        date: formData.date,
-        location: formData.location.trim(),
-        capacity: parseInt(formData.capacity),
-        status: formData.status,
-        registeredUsers: 0,
-        createdAt: new Date().toISOString().split('T')[0]
+      if (isEditMode && editingEvent && onEventUpdated) {
+        // Create the updated event object
+        const updatedEvent: Event = {
+          ...editingEvent,
+          title: formData.title.trim(),
+          description: formData.description.trim() || null,
+          date: formData.date,
+          location: formData.location.trim(),
+          capacity: parseInt(formData.capacity),
+          status: formData.status,
+        }
+
+        toast({
+          title: "Event Updated Successfully",
+          description: `${formData.title} has been updated.`,
+        })
+
+        onEventUpdated(updatedEvent)
+      } else {
+        // Create the new event object for optimistic update
+        const newEvent: Event = {
+          id: result.data?.id || Date.now().toString(),
+          title: formData.title.trim(),
+          description: formData.description.trim() || null,
+          date: formData.date,
+          location: formData.location.trim(),
+          capacity: parseInt(formData.capacity),
+          status: formData.status,
+          registeredUsers: 0,
+          createdAt: new Date().toISOString().split('T')[0]
+        }
+
+        toast({
+          title: "Event Created Successfully",
+          description: `${formData.title} has been added to your events.`,
+        })
+
+        onEventCreated(newEvent)
       }
-
-      toast({
-        title: "Event Created Successfully",
-        description: `${formData.title} has been added to your events.`,
-      })
-
-      handleClose()
-      onEventCreated(newEvent)
     } catch {
       toast({
         title: "Error",
-        description: "Failed to create event. Please try again.",
+        description: `Failed to ${isEditMode ? 'update' : 'create'} event. Please try again.`,
         variant: "destructive",
       })
     } finally {
@@ -193,7 +247,7 @@ export function AddEventModal({ isOpen, onClose, onEventCreated }: AddEventModal
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Calendar className="h-6 w-6 text-blue-600" />
-            Create New Event
+            {isEditMode ? 'Edit Event' : 'Create New Event'}
           </DialogTitle>
         </DialogHeader>
 
@@ -340,10 +394,10 @@ export function AddEventModal({ isOpen, onClose, onEventCreated }: AddEventModal
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Creating...
+                  {isEditMode ? 'Updating...' : 'Creating...'}
                 </>
               ) : (
-                "Create Event"
+                isEditMode ? 'Update Event' : 'Create Event'
               )}
             </Button>
           </div>
