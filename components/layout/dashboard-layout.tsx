@@ -125,7 +125,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <Menu className="h-5 w-5" />
             </Button>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">Last updated: {new Date().toLocaleString()}</span>
+              <span className="text-sm text-gray-500">Last updated: {new Date().toLocaleString('en-US')}</span>
             </div>
           </div>
         </header>
