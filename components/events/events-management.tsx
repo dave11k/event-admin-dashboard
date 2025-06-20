@@ -60,7 +60,7 @@ export function EventsManagement({ initialEvents }: EventsManagementProps) {
       const matchesSearch =
         event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (event.description && event.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        event.location.toLowerCase().includes(searchQuery.toLowerCase())
+        (event.location && event.location.toLowerCase().includes(searchQuery.toLowerCase()))
 
       const matchesStatus = statusFilter === "all" || event.status === statusFilter
 

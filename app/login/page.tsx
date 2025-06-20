@@ -35,6 +35,7 @@ export default function LoginPage() {
           password,
         })
         if (error) throw error
+        toast.success('Logging in!')
         router.push('/dashboard')
         router.refresh()
       }
