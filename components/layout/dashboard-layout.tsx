@@ -2,11 +2,12 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Calendar, Users, BarChart3, Menu, X, LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
@@ -23,8 +24,25 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [pendingPath, setPendingPath] = useState<string | null>(null)
   const pathname = usePathname()
+  const router = useRouter()
   const supabase = createClient()
+  const [isPending, startTransition] = useTransition()
+
+  const handleNavigation = (href: string, e: React.MouseEvent) => {
+    if (href === pathname) return
+    
+    e.preventDefault()
+    setPendingPath(href)
+    setSidebarOpen(false)
+    
+    startTransition(() => {
+      router.push(href)
+      // Clear pending path after a delay to show loading state
+      setTimeout(() => setPendingPath(null), 200)
+    })
+  }
 
   const handleSignOut = async () => {
     try {
@@ -83,15 +101,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <nav className="flex-1 px-4 py-6 space-y-2">
             {navigation.map((item) => {
               const isActive = pathname === item.href
+              const isPending = pendingPath === item.href
+              const isHighlighted = isActive || isPending
               return (
                 <Link
                   key={item.name}
                   href={item.href}
+                  onClick={(e) => handleNavigation(item.href, e)}
                   className={cn(
                     "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors",
-                    isActive
+                    isHighlighted
                       ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   )}
                 >
                   <item.icon className="mr-3 h-5 w-5" />
@@ -146,7 +167,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="p-4 sm:p-6 lg:p-8">
+          {isPending || pendingPath ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-center">
+                <LoadingSpinner size="lg" />
+                <p className="mt-4 text-gray-600">Loading...</p>
+              </div>
+            </div>
+          ) : (
+            children
+          )}
+        </main>
       </div>
     </div>
   )
