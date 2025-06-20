@@ -11,35 +11,27 @@ export interface EventWithRegistrations extends Event {
 export async function getEvents(): Promise<EventWithRegistrations[]> {
   const supabase = await createClient()
   
-  // First get all events
-  const { data: events, error: eventsError } = await supabase
+  // Single optimized query with LEFT JOIN to get events and registration counts
+  const { data, error } = await supabase
     .from('events')
-    .select('*')
+    .select(`
+      *,
+      event_registrations(count)
+    `)
     .order('created_at', { ascending: false })
   
-  if (eventsError) {
-    console.error('Error fetching events:', eventsError)
+  if (error) {
+    console.error('Error fetching events:', error)
     return []
   }
 
-  if (!events) return []
+  if (!data) return []
   
-  // Then get registration counts for each event separately
-  const eventsWithCounts = await Promise.all(
-    events.map(async (event) => {
-      const { count } = await supabase
-        .from('event_registrations')
-        .select('*', { count: 'exact', head: true })
-        .eq('event_id', event.id)
-      
-      return {
-        ...event,
-        registrationCount: count || 0
-      }
-    })
-  )
-  
-  return eventsWithCounts
+  // Transform the data to include registration count
+  return data.map(event => ({
+    ...event,
+    registrationCount: event.event_registrations?.length || 0
+  }))
 }
 
 export async function createEvent(eventData: NewEvent): Promise<Event | null> {

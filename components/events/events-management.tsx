@@ -68,9 +68,10 @@ export function EventsManagement({ initialEvents }: EventsManagementProps) {
     })
   }, [events, searchQuery, statusFilter])
 
-  const handleEventCreated = () => {
-    // Refresh the page to show the new event
-    window.location.reload()
+  const handleEventCreated = (newEvent: Event) => {
+    // Add the new event to the state instead of reloading
+    setEvents(prev => [newEvent, ...prev])
+    setIsAddModalOpen(false)
   }
 
   const handleUpdateEventStatus = async (eventId: string, newStatus: Event["status"]) => {

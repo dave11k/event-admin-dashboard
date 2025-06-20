@@ -17,7 +17,7 @@ import type { Event } from "./events-management"
 interface AddEventModalProps {
   isOpen: boolean
   onClose: () => void
-  onEventCreated: () => void
+  onEventCreated: (newEvent: Event) => void
 }
 
 interface FormData {
@@ -132,13 +132,26 @@ export function AddEventModal({ isOpen, onClose, onEventCreated }: AddEventModal
         return
       }
 
+      // Create the new event object for optimistic update
+      const newEvent: Event = {
+        id: result.data?.id || Date.now().toString(),
+        title: formData.title.trim(),
+        description: formData.description.trim() || null,
+        date: formData.date,
+        location: formData.location.trim(),
+        capacity: parseInt(formData.capacity),
+        status: formData.status,
+        registeredUsers: 0,
+        createdAt: new Date().toISOString().split('T')[0]
+      }
+
       toast({
         title: "Event Created Successfully",
         description: `${formData.title} has been added to your events.`,
       })
 
       handleClose()
-      onEventCreated()
+      onEventCreated(newEvent)
     } catch {
       toast({
         title: "Error",
