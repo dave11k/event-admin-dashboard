@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { UserProfile } from "@/lib/queries/users";
+import { AddUserModal } from "./add-user-modal";
 
 interface UsersManagementProps {
   initialUsers: UserProfile[];
@@ -17,6 +18,7 @@ export function UsersManagement({ initialUsers }: UsersManagementProps) {
   const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "organiser">(
     "all",
   );
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Filter users based on search and role
   const filteredUsers = useMemo(() => {
@@ -40,13 +42,18 @@ export function UsersManagement({ initialUsers }: UsersManagementProps) {
     };
   }, [users]);
 
+  const handleUserCreated = () => {
+    // Refresh the page to get updated user list
+    window.location.reload();
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Dashboard Users</h1>
-          <Button>
+          <Button onClick={() => setIsAddModalOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add User
           </Button>
@@ -182,6 +189,13 @@ export function UsersManagement({ initialUsers }: UsersManagementProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Add User Modal */}
+      <AddUserModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={handleUserCreated}
+      />
     </div>
   );
 }

@@ -26,86 +26,15 @@ export interface UserRegistrationStats {
   completedRegistrations: number;
 }
 
-// Define the shape of the Supabase response
-// Note: profiles and events are arrays because of how Supabase joins work
-interface RegistrationWithRelations {
-  id: string;
-  registration_status: string;
-  registered_at: string;
-  profiles: {
-    id: string;
-    email: string;
-    full_name: string | null;
-  }[];
-  events: {
-    id: string;
-    title: string;
-    status: string;
-  }[];
-}
 
+// This function is deprecated as we've moved to direct attendee storage
+// instead of linking registrations to user profiles
 export async function getUsersWithRegistrations(): Promise<
   UserWithRegistration[]
 > {
-  const supabase = await createClient();
-
-  // Single optimized query with JOINs to get all data at once
-  const { data, error } = await supabase
-    .from("event_registrations")
-    .select(
-      `
-      id,
-      registration_status,
-      registered_at,
-      profiles!inner (
-        id,
-        email,
-        full_name
-      ),
-      events!inner (
-        id,
-        title,
-        status
-      )
-    `,
-    )
-    .order("registered_at", { ascending: false });
-
-  if (error) {
-    console.error("Error fetching user registrations:", error);
-    return [];
-  }
-
-  if (!data) return [];
-
-  // Type assertion to tell TS the actual structure
-  const typedData = data as RegistrationWithRelations[];
-
-  // Transform the joined data
-  return typedData.map((registration) => {
-    // Since we're using !inner joins, we expect exactly one profile and one event
-    // But they come as arrays, so we take the first element
-    const profile = registration.profiles[0];
-    const event = registration.events[0];
-
-    return {
-      id: profile.id,
-      name: profile.full_name || profile.email || "Unknown User",
-      email: profile.email,
-      eventId: event.id,
-      eventName: event.title,
-      eventStatus: event.status as
-        | "upcoming"
-        | "ongoing"
-        | "completed"
-        | "cancelled",
-      registeredDate: registration.registered_at,
-      registrationStatus: registration.registration_status as
-        | "registered"
-        | "attended"
-        | "cancelled",
-    };
-  });
+  // Return empty array since this functionality is no longer needed
+  // The new system stores attendee names directly in event_registrations
+  return [];
 }
 
 export async function getUserRegistrationStats(): Promise<UserRegistrationStats> {
@@ -115,32 +44,20 @@ export async function getUserRegistrationStats(): Promise<UserRegistrationStats>
   const [
     { count: totalUsers },
     { count: totalRegistrations },
-    { count: upcomingRegistrations },
-    { count: completedRegistrations },
   ] = await Promise.all([
-    // Total unique users
+    // Total dashboard users (profiles)
     supabase.from("profiles").select("*", { count: "exact", head: true }),
-    // Total registrations
+    // Total event registrations (attendees)
     supabase
       .from("event_registrations")
       .select("*", { count: "exact", head: true }),
-    // Upcoming event registrations (using JOIN)
-    supabase
-      .from("event_registrations")
-      .select("*, events!inner(status)", { count: "exact", head: true })
-      .eq("events.status", "upcoming"),
-    // Completed event registrations (using JOIN)
-    supabase
-      .from("event_registrations")
-      .select("*, events!inner(status)", { count: "exact", head: true })
-      .eq("events.status", "completed"),
   ]);
 
   return {
     totalUsers: totalUsers || 0,
     totalRegistrations: totalRegistrations || 0,
-    upcomingRegistrations: upcomingRegistrations || 0,
-    completedRegistrations: completedRegistrations || 0,
+    upcomingRegistrations: 0, // Deprecated - not applicable with new schema
+    completedRegistrations: 0, // Deprecated - not applicable with new schema
   };
 }
 
