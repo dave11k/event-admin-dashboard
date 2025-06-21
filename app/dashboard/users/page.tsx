@@ -1,8 +1,12 @@
-import { Suspense } from "react"
-import { UsersManagement } from "@/components/users/users-management"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { getUsersWithRegistrations, getUserRegistrationStats } from "@/lib/queries/users"
-import { Card, CardContent } from "@/components/ui/card"
+import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import { UsersManagement } from "@/components/users/users-management";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import {
+  getCurrentUserProfile,
+  getAllDashboardUsers,
+} from "@/lib/queries/users";
+import { Card, CardContent } from "@/components/ui/card";
 
 function UsersLoadingSkeleton() {
   return (
@@ -20,24 +24,30 @@ function UsersLoadingSkeleton() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 async function UsersContent() {
-  const [users, stats] = await Promise.all([
-    getUsersWithRegistrations(),
-    getUserRegistrationStats()
-  ])
-  
-  return <UsersManagement initialUsers={users} stats={stats} />
+  const users = await getAllDashboardUsers();
+  return <UsersManagement initialUsers={users} />;
 }
 
-export default function UsersPage() {
+export default async function UsersPage() {
+  const userProfile = await getCurrentUserProfile();
+
+  if (!userProfile) {
+    redirect("/login");
+  }
+
+  if (userProfile.role !== "admin") {
+    redirect("/dashboard");
+  }
+
   return (
     <DashboardLayout>
       <Suspense fallback={<UsersLoadingSkeleton />}>
         <UsersContent />
       </Suspense>
     </DashboardLayout>
-  )
+  );
 }

@@ -1,8 +1,10 @@
-import { Suspense } from "react"
-import { EventsManagement } from "@/components/events/events-management"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { getEvents } from "@/lib/queries/events"
-import { Card, CardContent } from "@/components/ui/card"
+import { Suspense } from "react";
+import { EventsManagement } from "@/components/events/events-management";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { getEvents } from "@/lib/queries/events";
+import { getCurrentUserProfile } from "@/lib/queries/users";
+import { Card, CardContent } from "@/components/ui/card";
+import { redirect } from "next/navigation";
 
 function EventsLoadingSkeleton() {
   return (
@@ -23,20 +25,30 @@ function EventsLoadingSkeleton() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
-async function EventsContent() {
-  const events = await getEvents()
-  return <EventsManagement initialEvents={events} />
+async function EventsContent({
+  userRole,
+}: {
+  userRole: "admin" | "organiser";
+}) {
+  const events = await getEvents();
+  return <EventsManagement initialEvents={events} userRole={userRole} />;
 }
 
-export default function EventsPage() {
+export default async function EventsPage() {
+  const userProfile = await getCurrentUserProfile();
+
+  if (!userProfile) {
+    redirect("/login");
+  }
+
   return (
     <DashboardLayout>
       <Suspense fallback={<EventsLoadingSkeleton />}>
-        <EventsContent />
+        <EventsContent userRole={userProfile.role} />
       </Suspense>
     </DashboardLayout>
-  )
+  );
 }

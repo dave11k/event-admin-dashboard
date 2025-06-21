@@ -1,32 +1,43 @@
-"use client"
+"use client";
 
-import { useState, useMemo } from "react"
-import { Plus, Search, Filter, Calendar } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { EventsTable } from "./events-table"
-import { AddEventModal } from "./add-event-modal"
-import { useToast } from "@/hooks/use-toast"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { EventWithRegistrations } from "@/lib/queries/events"
-import { updateEventStatusAction, deleteEventAction } from "@/lib/actions/events"
+import { useState, useMemo } from "react";
+import { Plus, Search, Filter, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { EventsTable } from "./events-table";
+import { AddEventModal } from "./add-event-modal";
+import { RegisterAttendeeModal } from "./register-attendee-modal";
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EventWithRegistrations } from "@/lib/queries/events";
+import {
+  updateEventStatusAction,
+  deleteEventAction,
+} from "@/lib/actions/events";
 
 // UI compatible event interface
 export interface Event {
-  id: string
-  title: string
-  description?: string | null
-  date: string
-  location: string | null
-  capacity: number
-  status: "upcoming" | "ongoing" | "completed" | "cancelled"
-  registeredUsers: number
-  createdAt: string
+  id: string;
+  title: string;
+  description?: string | null;
+  date: string;
+  location: string | null;
+  capacity: number;
+  status: "upcoming" | "ongoing" | "completed" | "cancelled";
+  registeredUsers: number;
+  createdAt: string;
 }
 
 interface EventsManagementProps {
-  initialEvents: EventWithRegistrations[]
+  initialEvents: EventWithRegistrations[];
+  userRole: "admin" | "organiser";
 }
 
 // Helper function to convert Supabase event to UI event
@@ -40,102 +51,137 @@ function convertToUIEvent(event: EventWithRegistrations): Event {
     capacity: event.capacity,
     status: event.status,
     registeredUsers: event.registrationCount,
-    createdAt: event.created_at.split('T')[0], // Format date
-  }
+    createdAt: event.created_at.split("T")[0], // Format date
+  };
 }
 
-export function EventsManagement({ initialEvents }: EventsManagementProps) {
+export function EventsManagement({
+  initialEvents,
+  userRole,
+}: EventsManagementProps) {
   const [events, setEvents] = useState<Event[]>(
-    initialEvents.map(convertToUIEvent)
-  )
+    initialEvents.map(convertToUIEvent),
+  );
   const [modalState, setModalState] = useState<{
-    isOpen: boolean
-    editingEvent?: Event | null
+    isOpen: boolean;
+    editingEvent?: Event | null;
   }>({
     isOpen: false,
-    editingEvent: null
-  })
-  const { toast } = useToast()
+    editingEvent: null,
+  });
+  const [registrationModal, setRegistrationModal] = useState<{
+    isOpen: boolean;
+    event: Event | null;
+  }>({
+    isOpen: false,
+    event: null,
+  });
+  const { toast } = useToast();
 
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   // Filter events based on search and filters
   const filteredEvents = useMemo(() => {
     return events.filter((event) => {
       const matchesSearch =
         event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (event.description && event.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (event.location && event.location.toLowerCase().includes(searchQuery.toLowerCase()))
+        (event.description &&
+          event.description
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())) ||
+        (event.location &&
+          event.location.toLowerCase().includes(searchQuery.toLowerCase()));
 
-      const matchesStatus = statusFilter === "all" || event.status === statusFilter
+      const matchesStatus =
+        statusFilter === "all" || event.status === statusFilter;
 
-      return matchesSearch && matchesStatus
-    })
-  }, [events, searchQuery, statusFilter])
+      return matchesSearch && matchesStatus;
+    });
+  }, [events, searchQuery, statusFilter]);
 
   const handleEventCreated = (newEvent: Event) => {
-    setEvents(prev => [newEvent, ...prev])
+    setEvents((prev) => [newEvent, ...prev]);
     // Close modal after a small delay to prevent flash
     setTimeout(() => {
-      setModalState({ isOpen: false, editingEvent: null })
-    }, 100)
-  }
+      setModalState({ isOpen: false, editingEvent: null });
+    }, 100);
+  };
 
   const handleEditEvent = (event: Event) => {
-    setModalState({ isOpen: true, editingEvent: event })
-  }
+    setModalState({ isOpen: true, editingEvent: event });
+  };
 
   const handleEventUpdated = (updatedEvent: Event) => {
-    setEvents(prev => prev.map(event => event.id === updatedEvent.id ? updatedEvent : event))
+    setEvents((prev) =>
+      prev.map((event) =>
+        event.id === updatedEvent.id ? updatedEvent : event,
+      ),
+    );
     // Close modal after a small delay to prevent flash
     setTimeout(() => {
-      setModalState({ isOpen: false, editingEvent: null })
-    }, 100)
-  }
+      setModalState({ isOpen: false, editingEvent: null });
+    }, 100);
+  };
 
-  const handleUpdateEventStatus = async (eventId: string, newStatus: Event["status"]) => {
-    const result = await updateEventStatusAction(eventId, newStatus)
-    
+  const handleUpdateEventStatus = async (
+    eventId: string,
+    newStatus: Event["status"],
+  ) => {
+    const result = await updateEventStatusAction(eventId, newStatus);
+
     if (result.error) {
       toast({
         title: "Error",
         description: result.error,
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
-    
-    setEvents((prev) => prev.map((event) => (event.id === eventId ? { ...event, status: newStatus } : event)))
+
+    setEvents((prev) =>
+      prev.map((event) =>
+        event.id === eventId ? { ...event, status: newStatus } : event,
+      ),
+    );
 
     toast({
       title: "Event Status Updated",
       description: `Event status has been changed to ${newStatus}.`,
-    })
-  }
+    });
+  };
 
   const handleDeleteEvent = async (eventId: string) => {
-    const eventToDelete = events.find((e) => e.id === eventId)
-    
-    const result = await deleteEventAction(eventId)
-    
+    const eventToDelete = events.find((e) => e.id === eventId);
+
+    const result = await deleteEventAction(eventId);
+
     if (result.error) {
       toast({
         title: "Error",
         description: result.error,
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
-    
-    setEvents((prev) => prev.filter((event) => event.id !== eventId))
+
+    setEvents((prev) => prev.filter((event) => event.id !== eventId));
 
     toast({
       title: "Event Deleted",
       description: `${eventToDelete?.title} has been removed.`,
       variant: "destructive",
-    })
-  }
+    });
+  };
+
+  const handleRegisterUser = (event: Event) => {
+    setRegistrationModal({ isOpen: true, event });
+  };
+
+  const handleRegistrationSuccess = () => {
+    // Refresh the events to get updated registration counts
+    window.location.reload();
+  };
 
   return (
     <div className="space-y-6">
@@ -143,12 +189,21 @@ export function EventsManagement({ initialEvents }: EventsManagementProps) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Event Management</h1>
-          <p className="text-gray-600 mt-1">Create, manage, and track all your events</p>
+          <p className="text-gray-600 mt-1">
+            {userRole === "admin"
+              ? "Create, manage, and track all your events"
+              : "View events and register attendees"}
+          </p>
         </div>
-        <Button onClick={() => setModalState({ isOpen: true, editingEvent: null })} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add New Event
-        </Button>
+        {userRole === "admin" && (
+          <Button
+            onClick={() => setModalState({ isOpen: true, editingEvent: null })}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add New Event
+          </Button>
+        )}
       </div>
 
       {/* Filters Section */}
@@ -200,16 +255,33 @@ export function EventsManagement({ initialEvents }: EventsManagementProps) {
       </Card>
 
       {/* Events Table */}
-      <EventsTable events={filteredEvents} onUpdateStatus={handleUpdateEventStatus} onDeleteEvent={handleDeleteEvent} onEditEvent={handleEditEvent} />
+      <EventsTable
+        events={filteredEvents}
+        onUpdateStatus={handleUpdateEventStatus}
+        onDeleteEvent={handleDeleteEvent}
+        onEditEvent={handleEditEvent}
+        onRegisterUser={handleRegisterUser}
+        userRole={userRole}
+      />
 
-      {/* Event Modal */}
-      <AddEventModal 
-        isOpen={modalState.isOpen} 
-        onClose={() => setModalState({ isOpen: false, editingEvent: null })} 
-        onEventCreated={handleEventCreated}
-        editingEvent={modalState.editingEvent}
-        onEventUpdated={handleEventUpdated}
+      {/* Event Modal - Admin Only */}
+      {userRole === "admin" && (
+        <AddEventModal
+          isOpen={modalState.isOpen}
+          onClose={() => setModalState({ isOpen: false, editingEvent: null })}
+          onEventCreated={handleEventCreated}
+          editingEvent={modalState.editingEvent}
+          onEventUpdated={handleEventUpdated}
+        />
+      )}
+
+      {/* Registration Modal */}
+      <RegisterAttendeeModal
+        isOpen={registrationModal.isOpen}
+        onClose={() => setRegistrationModal({ isOpen: false, event: null })}
+        event={registrationModal.event}
+        onSuccess={handleRegistrationSuccess}
       />
     </div>
-  )
+  );
 }

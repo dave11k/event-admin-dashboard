@@ -1,23 +1,40 @@
-"use client"
-import { MoreHorizontal, Calendar, MapPin, Users, Edit, Trash2, Eye } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+"use client";
+import {
+  MoreHorizontal,
+  Calendar,
+  MapPin,
+  Users,
+  Edit,
+  Trash2,
+  Eye,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import type { Event } from "./events-management"
+} from "@/components/ui/dropdown-menu";
+import type { Event } from "./events-management";
 
 interface EventsTableProps {
-  events: Event[]
-  onUpdateStatus: (eventId: string, status: Event["status"]) => void
-  onDeleteEvent: (eventId: string) => void
-  onEditEvent: (event: Event) => void
+  events: Event[];
+  onUpdateStatus: (eventId: string, status: Event["status"]) => void;
+  onDeleteEvent: (eventId: string) => void;
+  onEditEvent: (event: Event) => void;
+  onRegisterUser: (event: Event) => void;
+  userRole: "admin" | "organiser";
 }
 
 const statusColors = {
@@ -25,27 +42,36 @@ const statusColors = {
   ongoing: "bg-orange-100 text-orange-800 border-orange-200",
   completed: "bg-green-100 text-green-800 border-green-200",
   cancelled: "bg-red-100 text-red-800 border-red-200",
-} as const
+} as const;
 
-export function EventsTable({ events, onUpdateStatus, onDeleteEvent, onEditEvent }: EventsTableProps) {
-  const filteredEvents = events // Remove filtering here since it's now done at parent level
+export function EventsTable({
+  events,
+  onUpdateStatus,
+  onDeleteEvent,
+  onEditEvent,
+  onRegisterUser,
+  userRole,
+}: EventsTableProps) {
+  const filteredEvents = events; // Remove filtering here since it's now done at parent level
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
-    })
-  }
+    });
+  };
 
   const getCapacityPercentage = (registered: number, capacity: number) => {
-    return Math.round((registered / capacity) * 100)
-  }
+    return Math.round((registered / capacity) * 100);
+  };
 
   return (
     <Card className="shadow-lg">
       <CardHeader>
-        <CardTitle className="text-xl font-bold text-gray-900">All Events</CardTitle>
+        <CardTitle className="text-xl font-bold text-gray-900">
+          All Events
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="rounded-lg border overflow-hidden">
@@ -62,7 +88,10 @@ export function EventsTable({ events, onUpdateStatus, onDeleteEvent, onEditEvent
             <TableBody>
               {filteredEvents.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-8 text-gray-500"
+                  >
                     No events found matching the selected filter.
                   </TableCell>
                 </TableRow>
@@ -71,9 +100,13 @@ export function EventsTable({ events, onUpdateStatus, onDeleteEvent, onEditEvent
                   <TableRow key={event.id} className="hover:bg-gray-50">
                     <TableCell>
                       <div className="space-y-1">
-                        <div className="font-semibold text-gray-900">{event.title}</div>
+                        <div className="font-semibold text-gray-900">
+                          {event.title}
+                        </div>
                         {event.description && (
-                          <div className="text-sm text-gray-600 line-clamp-2">{event.description}</div>
+                          <div className="text-sm text-gray-600 line-clamp-2">
+                            {event.description}
+                          </div>
                         )}
                       </div>
                     </TableCell>
@@ -85,7 +118,9 @@ export function EventsTable({ events, onUpdateStatus, onDeleteEvent, onEditEvent
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <MapPin className="h-4 w-4 text-gray-400" />
-                          <span className="truncate max-w-[150px]">{event.location}</span>
+                          <span className="truncate max-w-[150px]">
+                            {event.location}
+                          </span>
                         </div>
                       </div>
                     </TableCell>
@@ -106,19 +141,31 @@ export function EventsTable({ events, onUpdateStatus, onDeleteEvent, onEditEvent
                           />
                         </div>
                         <div className="text-xs text-gray-500">
-                          {getCapacityPercentage(event.registeredUsers, event.capacity)}% filled
+                          {getCapacityPercentage(
+                            event.registeredUsers,
+                            event.capacity,
+                          )}
+                          % filled
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge className={statusColors[event.status]} variant="outline">
-                        {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                      <Badge
+                        className={statusColors[event.status]}
+                        variant="outline"
+                      >
+                        {event.status.charAt(0).toUpperCase() +
+                          event.status.slice(1)}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -127,40 +174,58 @@ export function EventsTable({ events, onUpdateStatus, onDeleteEvent, onEditEvent
                             <Eye className="h-4 w-4" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="flex items-center gap-2 cursor-pointer"
-                            onClick={() => onEditEvent(event)}
-                          >
-                            <Edit className="h-4 w-4" />
-                            Edit Event
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="flex items-center gap-2 cursor-pointer"
-                            onClick={() => onUpdateStatus(event.id, "upcoming")}
+                            onClick={() => onRegisterUser(event)}
                           >
-                            Set as Upcoming
+                            <Users className="h-4 w-4" />
+                            Register User
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="flex items-center gap-2 cursor-pointer"
-                            onClick={() => onUpdateStatus(event.id, "ongoing")}
-                          >
-                            Set as Ongoing
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="flex items-center gap-2 cursor-pointer"
-                            onClick={() => onUpdateStatus(event.id, "completed")}
-                          >
-                            Set as Completed
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
-                            onClick={() => onDeleteEvent(event.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            Delete Event
-                          </DropdownMenuItem>
+                          {userRole === "admin" && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="flex items-center gap-2 cursor-pointer"
+                                onClick={() => onEditEvent(event)}
+                              >
+                                <Edit className="h-4 w-4" />
+                                Edit Event
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="flex items-center gap-2 cursor-pointer"
+                                onClick={() =>
+                                  onUpdateStatus(event.id, "upcoming")
+                                }
+                              >
+                                Set as Upcoming
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="flex items-center gap-2 cursor-pointer"
+                                onClick={() =>
+                                  onUpdateStatus(event.id, "ongoing")
+                                }
+                              >
+                                Set as Ongoing
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="flex items-center gap-2 cursor-pointer"
+                                onClick={() =>
+                                  onUpdateStatus(event.id, "completed")
+                                }
+                              >
+                                Set as Completed
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+                                onClick={() => onDeleteEvent(event.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Delete Event
+                              </DropdownMenuItem>
+                            </>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -172,5 +237,5 @@ export function EventsTable({ events, onUpdateStatus, onDeleteEvent, onEditEvent
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -1,84 +1,96 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useTransition } from "react"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { Calendar, Users, BarChart3, Menu, X, LogOut, Settings } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { LoadingSpinner } from "@/components/ui/loading-spinner"
-import { cn } from "@/lib/utils"
-import { createClient } from "@/lib/supabase/client"
-import { toast } from "sonner"
+import { useState, useTransition } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  Calendar,
+  Users,
+  BarChart3,
+  Menu,
+  X,
+  LogOut,
+  Settings,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
   { name: "Events", href: "/dashboard/events", icon: Calendar },
   { name: "Users", href: "/dashboard/users", icon: Users },
-]
+];
 
 interface DashboardLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [pendingPath, setPendingPath] = useState<string | null>(null)
-  const pathname = usePathname()
-  const router = useRouter()
-  const supabase = createClient()
-  const [isPending, startTransition] = useTransition()
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
+  const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
+  const [isPending, startTransition] = useTransition();
 
   const handleNavigation = (href: string, e: React.MouseEvent) => {
-    if (href === pathname) return
-    
-    e.preventDefault()
-    setPendingPath(href)
-    setSidebarOpen(false)
-    
+    if (href === pathname) return;
+
+    e.preventDefault();
+    setPendingPath(href);
+    setSidebarOpen(false);
+
     startTransition(() => {
-      router.push(href)
+      router.push(href);
       // Clear pending path after a delay to show loading state
-      setTimeout(() => setPendingPath(null), 200)
-    })
-  }
+      setTimeout(() => setPendingPath(null), 200);
+    });
+  };
 
   const handleSignOut = async () => {
     try {
-      console.log('Starting sign out process...')
+      console.log("Starting sign out process...");
       const { error } = await supabase.auth.signOut({
-        scope: 'global'
-      })
-      
+        scope: "global",
+      });
+
       if (error) {
-        console.error('Sign out error:', error)
-        throw error
+        console.error("Sign out error:", error);
+        throw error;
       }
-      
-      if (typeof window !== 'undefined') {
-        localStorage.clear()
-        sessionStorage.clear()
+
+      if (typeof window !== "undefined") {
+        localStorage.clear();
+        sessionStorage.clear();
       }
-      
-      toast.success("Signed out successfully")
-      
+
+      toast.success("Signed out successfully");
+
       // Force a hard redirect to login page
-      window.location.href = '/login'
+      window.location.href = "/login";
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
-      toast.error("Error signing out: " + errorMessage)
-      
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      toast.error("Error signing out: " + errorMessage);
+
       // Even if there's an error, try to redirect to login
-      window.location.href = '/login'
+      window.location.href = "/login";
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
 
       {/* Sidebar */}
@@ -92,7 +104,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
             <h2 className="text-xl font-bold text-gray-900">EventAdmin</h2>
-            <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(false)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+            >
               <X className="h-5 w-5" />
             </Button>
           </div>
@@ -100,9 +117,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2">
             {navigation.map((item) => {
-              const isActive = pathname === item.href
-              const isPending = pendingPath === item.href
-              const isHighlighted = isActive || isPending
+              const isActive = pathname === item.href;
+              const isPending = pendingPath === item.href;
+              const isHighlighted = isActive || isPending;
               return (
                 <Link
                   key={item.name}
@@ -112,13 +129,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors",
                     isHighlighted
                       ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
                   )}
                 >
                   <item.icon className="mr-3 h-5 w-5" />
                   {item.name}
                 </Link>
-              )
+              );
             })}
           </nav>
 
@@ -134,7 +151,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>
             </div>
             <div className="space-y-1">
-              <Button variant="ghost" size="sm" className="w-full justify-start">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start"
+              >
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
               </Button>
@@ -143,9 +164,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 size="sm"
                 className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
                 onClick={handleSignOut}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
               </Button>
             </div>
           </div>
@@ -157,11 +178,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Top navigation bar */}
         <header className="bg-white border-b border-gray-200 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+            >
               <Menu className="h-5 w-5" />
             </Button>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">Last updated: {new Date().toLocaleString('en-US')}</span>
+              <span className="text-sm text-gray-500">
+                Last updated: {new Date().toLocaleString("en-US")}
+              </span>
             </div>
           </div>
         </header>
@@ -181,5 +209,5 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </main>
       </div>
     </div>
-  )
+  );
 }

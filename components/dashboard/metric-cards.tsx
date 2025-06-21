@@ -1,9 +1,9 @@
-import { Calendar, Clock, Users, DollarSign } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { DashboardMetrics } from "@/lib/queries/dashboard"
+import { Calendar, Clock, Users, DollarSign } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { DashboardMetrics } from "@/lib/queries/dashboard";
 
 interface MetricCardsProps {
-  metrics: DashboardMetrics
+  metrics: DashboardMetrics;
 }
 
 export function MetricCards({ metrics: data }: MetricCardsProps) {
@@ -44,7 +44,7 @@ export function MetricCards({ metrics: data }: MetricCardsProps) {
       iconColor: "text-yellow-600",
       textColor: "text-yellow-900",
     },
-  ]
+  ];
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {metrics.map((metric, index) => (
@@ -55,8 +55,14 @@ export function MetricCards({ metrics: data }: MetricCardsProps) {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <div className={`text-3xl font-bold ${metric.textColor} mb-2`}>{metric.value}</div>
-                <div className={`text-sm font-semibold ${metric.textColor} opacity-80`}>{metric.title}</div>
+                <div className={`text-3xl font-bold ${metric.textColor} mb-2`}>
+                  {metric.value}
+                </div>
+                <div
+                  className={`text-sm font-semibold ${metric.textColor} opacity-80`}
+                >
+                  {metric.title}
+                </div>
               </div>
               <div className={`p-3 rounded-full bg-white shadow-sm`}>
                 <metric.icon className={`h-6 w-6 ${metric.iconColor}`} />
@@ -66,5 +72,5 @@ export function MetricCards({ metrics: data }: MetricCardsProps) {
         </Card>
       ))}
     </div>
-  )
+  );
 }

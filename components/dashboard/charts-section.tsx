@@ -1,22 +1,43 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
-import { EventWithRegistrationCount, EventStatusCount } from "@/lib/queries/dashboard"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import {
+  EventWithRegistrationCount,
+  EventStatusCount,
+} from "@/lib/queries/dashboard";
 
 interface ChartsSectionProps {
-  eventsWithCounts: EventWithRegistrationCount[]
-  eventStatusCounts: EventStatusCount[]
+  eventsWithCounts: EventWithRegistrationCount[];
+  eventStatusCounts: EventStatusCount[];
 }
 
-export function ChartsSection({ eventsWithCounts, eventStatusCounts }: ChartsSectionProps) {
+export function ChartsSection({
+  eventsWithCounts,
+  eventStatusCounts,
+}: ChartsSectionProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {/* Bar Chart - Users per Event */}
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-xl font-bold text-gray-900">Users per Event</CardTitle>
-          <p className="text-sm text-gray-600">Number of registered users for each event</p>
+          <CardTitle className="text-xl font-bold text-gray-900">
+            Users per Event
+          </CardTitle>
+          <p className="text-sm text-gray-600">
+            Number of registered users for each event
+          </p>
         </CardHeader>
         <CardContent>
           <div className="h-80">
@@ -31,7 +52,14 @@ export function ChartsSection({ eventsWithCounts, eventStatusCounts }: ChartsSec
                 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="title" angle={-45} textAnchor="end" height={80} fontSize={12} stroke="#666" />
+                <XAxis
+                  dataKey="title"
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                  fontSize={12}
+                  stroke="#666"
+                />
                 <YAxis stroke="#666" fontSize={12} />
                 <Tooltip
                   contentStyle={{
@@ -45,7 +73,10 @@ export function ChartsSection({ eventsWithCounts, eventStatusCounts }: ChartsSec
                 />
                 <Bar dataKey="users" fill="#8884d8" radius={[4, 4, 0, 0]}>
                   {eventsWithCounts.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={`hsl(${220 + index * 30}, 70%, 60%)`} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={`hsl(${220 + index * 30}, 70%, 60%)`}
+                    />
                   ))}
                 </Bar>
               </BarChart>
@@ -57,8 +88,12 @@ export function ChartsSection({ eventsWithCounts, eventStatusCounts }: ChartsSec
       {/* Pie Chart - Event Status Breakdown */}
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-xl font-bold text-gray-900">Event Status Breakdown</CardTitle>
-          <p className="text-sm text-gray-600">Distribution of events by current status</p>
+          <CardTitle className="text-xl font-bold text-gray-900">
+            Event Status Breakdown
+          </CardTitle>
+          <p className="text-sm text-gray-600">
+            Distribution of events by current status
+          </p>
         </CardHeader>
         <CardContent>
           <div className="h-80">
@@ -95,7 +130,10 @@ export function ChartsSection({ eventsWithCounts, eventStatusCounts }: ChartsSec
           <div className="flex justify-center mt-4 space-x-6">
             {eventStatusCounts.map((entry) => (
               <div key={entry.name} className="flex items-center space-x-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: entry.color }}
+                />
                 <span className="text-sm text-gray-600">
                   {entry.name} ({entry.value})
                 </span>
@@ -105,5 +143,5 @@ export function ChartsSection({ eventsWithCounts, eventStatusCounts }: ChartsSec
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
