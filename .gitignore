@@ -27,3 +27,9 @@ next-env.d.ts
 CLAUDE.md
 TODO.md
 PLAN.md
+test-results/create-user-Create-User-sh-f8d18-odal-when-cancel-is-clicked-chromium/error-context.md
+
+# tests
+test-results/
+tests/
+playwright-report/

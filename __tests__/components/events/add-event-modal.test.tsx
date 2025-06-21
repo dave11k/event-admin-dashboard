@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AddEventModal } from "@/components/events/add-event-modal";
+import { createEventAction } from "@/lib/actions/events";
 
 // Setup global TextEncoder/TextDecoder for Node.js environment
 const { TextEncoder, TextDecoder } = require("util");
@@ -13,7 +14,8 @@ jest.mock("next/cache", () => ({
 }));
 
 jest.mock("@/lib/actions/events", () => ({
-  addEvent: jest.fn(),
+  createEventAction: jest.fn(),
+  updateEventAction: jest.fn(),
 }));
 
 const mockProps = {
@@ -25,6 +27,8 @@ const mockProps = {
 describe("AddEventModal", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default mock behavior
+    (createEventAction as jest.Mock).mockResolvedValue({ data: { id: "123" } });
   });
 
   it("renders modal when open", () => {
@@ -111,6 +115,9 @@ describe("AddEventModal", () => {
   });
 
   it("submits form with valid data", async () => {
+    // Mock createEventAction to return success
+    (createEventAction as jest.Mock).mockResolvedValue({ data: { id: "123" } });
+
     const user = userEvent.setup();
     render(<AddEventModal {...mockProps} />);
 
@@ -119,6 +126,7 @@ describe("AddEventModal", () => {
     const dateInput = screen.getByLabelText(/Event Date/);
     const locationInput = screen.getByLabelText(/Location/);
     const capacityInput = screen.getByLabelText(/Capacity/);
+    const priceInput = screen.getByLabelText(/Price/);
 
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -129,6 +137,7 @@ describe("AddEventModal", () => {
     await user.type(dateInput, tomorrowString);
     await user.type(locationInput, "Test Location");
     await user.type(capacityInput, "100");
+    await user.type(priceInput, "10");
 
     const submitButton = screen.getByRole("button", { name: /Create Event/ });
     await user.click(submitButton);
@@ -176,6 +185,7 @@ describe("AddEventModal", () => {
     const dateInput = screen.getByLabelText(/Event Date/);
     const locationInput = screen.getByLabelText(/Location/);
     const capacityInput = screen.getByLabelText(/Capacity/);
+    const priceInput = screen.getByLabelText(/Price/);
 
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -185,12 +195,21 @@ describe("AddEventModal", () => {
     await user.type(dateInput, tomorrowString);
     await user.type(locationInput, "Test Location");
     await user.type(capacityInput, "100");
+    await user.type(priceInput, "10");
 
     const submitButton = screen.getByRole("button", { name: /Create Event/ });
     expect(submitButton).toBeEnabled();
   });
 
   it("shows loading state during form submission", async () => {
+    // Mock createEventAction to return a delayed promise
+    let resolvePromise: (value: any) => void;
+    const delayedPromise = new Promise((resolve) => {
+      resolvePromise = resolve;
+    });
+
+    (createEventAction as jest.Mock).mockReturnValue(delayedPromise);
+
     const user = userEvent.setup();
     render(<AddEventModal {...mockProps} />);
 
@@ -198,6 +217,7 @@ describe("AddEventModal", () => {
     const dateInput = screen.getByLabelText(/Event Date/);
     const locationInput = screen.getByLabelText(/Location/);
     const capacityInput = screen.getByLabelText(/Capacity/);
+    const priceInput = screen.getByLabelText(/Price/);
 
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -207,12 +227,20 @@ describe("AddEventModal", () => {
     await user.type(dateInput, tomorrowString);
     await user.type(locationInput, "Test Location");
     await user.type(capacityInput, "100");
+    await user.type(priceInput, "10");
 
     const submitButton = screen.getByRole("button", { name: /Create Event/ });
     await user.click(submitButton);
 
+    // Check loading state immediately after click
     expect(screen.getByText("Creating...")).toBeInTheDocument();
     expect(submitButton).toBeDisabled();
+
+    // Resolve the promise to finish the test
+    resolvePromise!({ data: { id: "123" } });
+    await waitFor(() => {
+      expect(mockProps.onEventCreated).toHaveBeenCalled();
+    });
   });
 
   it("clears field errors when user starts typing", async () => {

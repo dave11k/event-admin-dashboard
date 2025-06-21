@@ -18,6 +18,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -266,6 +267,11 @@ export function AddEventModal({
             <Calendar className="h-6 w-6 text-blue-600" />
             {isEditMode ? "Edit Event" : "Create New Event"}
           </DialogTitle>
+          <DialogDescription>
+            {isEditMode
+              ? "Update the event details below."
+              : "Fill in the form below to create a new event."}
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
