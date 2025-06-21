@@ -69,6 +69,7 @@ export function RegisterAttendeeModal({
         onClose();
       }
     } catch (error) {
+      console.error("Error registering attendee:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -95,7 +96,7 @@ export function RegisterAttendeeModal({
         <DialogHeader>
           <DialogTitle>Register Attendee</DialogTitle>
           <DialogDescription>
-            Register a new attendee for "{event.title}"
+            Register a new attendee for &ldquo;{event.title}&rdquo;
           </DialogDescription>
         </DialogHeader>
 
