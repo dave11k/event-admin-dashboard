@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { EventsTable } from "./events-table";
 import { AddEventModal } from "./add-event-modal";
 import { RegisterAttendeeModal } from "./register-attendee-modal";
+import { AttendeeListModal } from "./attendee-list-modal";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import {
@@ -70,6 +71,13 @@ export function EventsManagement({
     editingEvent: null,
   });
   const [registrationModal, setRegistrationModal] = useState<{
+    isOpen: boolean;
+    event: Event | null;
+  }>({
+    isOpen: false,
+    event: null,
+  });
+  const [attendeeListModal, setAttendeeListModal] = useState<{
     isOpen: boolean;
     event: Event | null;
   }>({
@@ -178,7 +186,16 @@ export function EventsManagement({
     setRegistrationModal({ isOpen: true, event });
   };
 
+  const handleViewRegistrations = (event: Event) => {
+    setAttendeeListModal({ isOpen: true, event });
+  };
+
   const handleRegistrationSuccess = () => {
+    // Refresh the events to get updated registration counts
+    window.location.reload();
+  };
+
+  const handleAttendeeRemoved = () => {
     // Refresh the events to get updated registration counts
     window.location.reload();
   };
@@ -261,6 +278,7 @@ export function EventsManagement({
         onDeleteEvent={handleDeleteEvent}
         onEditEvent={handleEditEvent}
         onRegisterUser={handleRegisterUser}
+        onViewRegistrations={handleViewRegistrations}
         userRole={userRole}
       />
 
@@ -281,6 +299,14 @@ export function EventsManagement({
         onClose={() => setRegistrationModal({ isOpen: false, event: null })}
         event={registrationModal.event}
         onSuccess={handleRegistrationSuccess}
+      />
+
+      {/* Attendee List Modal */}
+      <AttendeeListModal
+        isOpen={attendeeListModal.isOpen}
+        onClose={() => setAttendeeListModal({ isOpen: false, event: null })}
+        event={attendeeListModal.event}
+        onAttendeeRemoved={handleAttendeeRemoved}
       />
     </div>
   );

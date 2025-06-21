@@ -34,6 +34,7 @@ interface EventsTableProps {
   onDeleteEvent: (eventId: string) => void;
   onEditEvent: (event: Event) => void;
   onRegisterUser: (event: Event) => void;
+  onViewRegistrations: (event: Event) => void;
   userRole: "admin" | "organiser";
 }
 
@@ -50,6 +51,7 @@ export function EventsTable({
   onDeleteEvent,
   onEditEvent,
   onRegisterUser,
+  onViewRegistrations,
   userRole,
 }: EventsTableProps) {
   const filteredEvents = events; // Remove filtering here since it's now done at parent level
@@ -170,9 +172,12 @@ export function EventsTable({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                          <DropdownMenuItem 
+                            className="flex items-center gap-2 cursor-pointer"
+                            onClick={() => onViewRegistrations(event)}
+                          >
                             <Eye className="h-4 w-4" />
-                            View Details
+                            View Registrations
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="flex items-center gap-2 cursor-pointer"
