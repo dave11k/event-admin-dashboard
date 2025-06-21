@@ -19,7 +19,7 @@ jest.mock("@/lib/actions/events", () => ({
 const mockProps = {
   isOpen: true,
   onClose: jest.fn(),
-  onSubmit: jest.fn(),
+  onEventCreated: jest.fn(),
 };
 
 describe("AddEventModal", () => {
@@ -134,14 +134,7 @@ describe("AddEventModal", () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(mockProps.onSubmit).toHaveBeenCalledWith({
-        title: "Test Event",
-        description: "Test Description",
-        date: tomorrowString,
-        location: "Test Location",
-        capacity: 100,
-        status: "Upcoming",
-      });
+      expect(mockProps.onEventCreated).toHaveBeenCalled();
     });
   });
 

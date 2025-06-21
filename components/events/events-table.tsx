@@ -172,7 +172,7 @@ export function EventsTable({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             className="flex items-center gap-2 cursor-pointer"
                             onClick={() => onViewRegistrations(event)}
                           >

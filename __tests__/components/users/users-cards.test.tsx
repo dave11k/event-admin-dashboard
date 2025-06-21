@@ -1,23 +1,27 @@
 import { render, screen } from "@testing-library/react";
 import { UsersCards } from "@/components/users/users-cards";
-import type { User } from "@/components/users/users-management";
+import type { UserWithRegistration } from "@/lib/queries/users";
 
-const mockUsers: User[] = [
+const mockUsers: UserWithRegistration[] = [
   {
     id: "1",
     name: "John Doe",
     email: "john@example.com",
+    eventId: "event-1",
     eventName: "Tech Conference 2024",
-    eventStatus: "Upcoming",
+    eventStatus: "upcoming",
     registeredDate: "2024-01-01T10:30:00Z",
+    registrationStatus: "registered",
   },
   {
     id: "2",
     name: "Jane Smith",
     email: "jane@example.com",
+    eventId: "event-2",
     eventName: "Music Festival",
-    eventStatus: "Ongoing",
+    eventStatus: "ongoing",
     registeredDate: "2024-01-02T14:15:00Z",
+    registrationStatus: "registered",
   },
 ];
 
@@ -102,13 +106,15 @@ describe("UsersCards", () => {
   });
 
   it("truncates long content properly", () => {
-    const longNameUser: User = {
+    const longNameUser: UserWithRegistration = {
       id: "3",
       name: "Very Long Name That Should Be Truncated",
       email: "verylongemail@verylongdomainname.com",
+      eventId: "event-3",
       eventName: "Very Long Event Name That Should Be Truncated As Well",
-      eventStatus: "Upcoming",
+      eventStatus: "upcoming",
       registeredDate: "2024-01-01T10:30:00Z",
+      registrationStatus: "registered",
     };
 
     render(<UsersCards users={[longNameUser]} />);
@@ -129,13 +135,15 @@ describe("UsersCards", () => {
   });
 
   it("handles single character names for initials", () => {
-    const singleCharUser: User = {
+    const singleCharUser: UserWithRegistration = {
       id: "4",
       name: "A",
       email: "a@example.com",
+      eventId: "event-4",
       eventName: "Test Event",
-      eventStatus: "Upcoming",
+      eventStatus: "upcoming",
       registeredDate: "2024-01-01T10:30:00Z",
+      registrationStatus: "registered",
     };
 
     render(<UsersCards users={[singleCharUser]} />);
@@ -146,13 +154,15 @@ describe("UsersCards", () => {
   });
 
   it("handles multi-word names for initials correctly", () => {
-    const multiWordUser: User = {
+    const multiWordUser: UserWithRegistration = {
       id: "5",
       name: "John Michael Smith",
       email: "jms@example.com",
+      eventId: "event-5",
       eventName: "Test Event",
-      eventStatus: "Upcoming",
+      eventStatus: "upcoming",
       registeredDate: "2024-01-01T10:30:00Z",
+      registrationStatus: "registered",
     };
 
     render(<UsersCards users={[multiWordUser]} />);

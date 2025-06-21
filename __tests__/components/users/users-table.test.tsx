@@ -1,24 +1,28 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { UsersTable } from "@/components/users/users-table";
-import type { User } from "@/components/users/users-management";
+import type { UserWithRegistration } from "@/lib/queries/users";
 
-const mockUsers: User[] = [
+const mockUsers: UserWithRegistration[] = [
   {
     id: "1",
     name: "John Doe",
     email: "john@example.com",
+    eventId: "event-1",
     eventName: "Tech Conference 2024",
-    eventStatus: "Upcoming",
+    eventStatus: "upcoming",
     registeredDate: "2024-01-01T10:30:00Z",
+    registrationStatus: "registered",
   },
   {
     id: "2",
     name: "Jane Smith",
     email: "jane@example.com",
+    eventId: "event-2",
     eventName: "Music Festival",
-    eventStatus: "Ongoing",
+    eventStatus: "ongoing",
     registeredDate: "2024-01-02T14:15:00Z",
+    registrationStatus: "registered",
   },
 ];
 
@@ -26,11 +30,6 @@ const mockProps = {
   users: mockUsers,
   searchQuery: "",
   setSearchQuery: jest.fn(),
-  eventFilter: "",
-  setEventFilter: jest.fn(),
-  statusFilter: "",
-  setStatusFilter: jest.fn(),
-  uniqueEvents: ["Tech Conference 2024", "Music Festival"],
   totalCount: 2,
 };
 

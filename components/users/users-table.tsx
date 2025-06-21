@@ -13,11 +13,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { User } from "./users-management";
+import type { UserWithRegistration } from "@/lib/queries/users";
 import { Input } from "@/components/ui/input";
 
 interface UsersTableProps {
-  users: User[];
+  users: UserWithRegistration[];
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   totalCount: number;
@@ -175,7 +175,11 @@ export function UsersTable({
                   </TableCell>
                   <TableCell>
                     <Badge
-                      className={statusColors[user.eventStatus]}
+                      className={
+                        statusColors[
+                          user.eventStatus as keyof typeof statusColors
+                        ]
+                      }
                       variant="outline"
                     >
                       {user.eventStatus.charAt(0).toUpperCase() +

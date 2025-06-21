@@ -12,7 +12,7 @@ const mockEvents: Event[] = [
     location: "San Francisco, CA",
     capacity: 500,
     registeredUsers: 250,
-    status: "Upcoming",
+    status: "upcoming",
     createdAt: "2024-01-01T00:00:00Z",
   },
   {
@@ -23,7 +23,7 @@ const mockEvents: Event[] = [
     location: "Los Angeles, CA",
     capacity: 1000,
     registeredUsers: 800,
-    status: "Ongoing",
+    status: "ongoing",
     createdAt: "2024-01-02T00:00:00Z",
   },
 ];
@@ -32,6 +32,10 @@ const mockProps = {
   events: mockEvents,
   onUpdateStatus: jest.fn(),
   onDeleteEvent: jest.fn(),
+  onEditEvent: jest.fn(),
+  onRegisterUser: jest.fn(),
+  onViewRegistrations: jest.fn(),
+  userRole: "admin" as const,
 };
 
 describe("EventsTable", () => {

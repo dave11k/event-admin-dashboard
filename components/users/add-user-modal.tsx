@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -11,98 +11,104 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { useToast } from "@/hooks/use-toast"
-import { createUserAction } from "@/lib/actions/users"
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { createUserAction } from "@/lib/actions/users";
 
 interface AddUserModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSuccess: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
 }
 
-export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) {
+export function AddUserModal({
+  isOpen,
+  onClose,
+  onSuccess,
+}: AddUserModalProps) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     fullName: "",
-    role: "organiser" as "admin" | "organiser"
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
+    role: "organiser" as "admin" | "organiser",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!formData.email.trim() || !formData.password.trim()) {
       toast({
         title: "Error",
         description: "Email and password are required",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     if (formData.password.length < 6) {
       toast({
-        title: "Error", 
+        title: "Error",
         description: "Password must be at least 6 characters long",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
       const result = await createUserAction({
         email: formData.email.trim(),
         password: formData.password,
         fullName: formData.fullName.trim() || undefined,
-        role: formData.role
-      })
+        role: formData.role,
+      });
 
       if (result.error) {
         toast({
           title: "Failed to Create User",
           description: result.error,
           variant: "destructive",
-        })
+        });
       } else {
         toast({
           title: "User Created Successfully",
-          description: result.message || `${formData.email} has been added as ${formData.role}`,
-        })
-        handleClose()
-        onSuccess()
+          description:
+            result.message ||
+            `${formData.email} has been added as ${formData.role}`,
+        });
+        handleClose();
+        onSuccess();
       }
     } catch {
       toast({
         title: "Error",
         description: "An unexpected error occurred",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleClose = () => {
     setFormData({
       email: "",
       password: "",
       fullName: "",
-      role: "organiser"
-    })
-    onClose()
-  }
+      role: "organiser",
+    });
+    onClose();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -113,7 +119,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
             Create a new admin or organiser account
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email Address *</Label>
@@ -121,7 +127,9 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
               id="email"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               placeholder="user@example.com"
               required
               disabled={isLoading}
@@ -134,7 +142,9 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
               id="password"
               type="password"
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
               placeholder="Minimum 6 characters"
               required
               disabled={isLoading}
@@ -148,7 +158,9 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
               id="fullName"
               type="text"
               value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, fullName: e.target.value })
+              }
               placeholder="Optional"
               disabled={isLoading}
             />
@@ -156,9 +168,9 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
 
           <div className="space-y-2">
             <Label htmlFor="role">Role *</Label>
-            <Select 
-              value={formData.role} 
-              onValueChange={(value: "admin" | "organiser") => 
+            <Select
+              value={formData.role}
+              onValueChange={(value: "admin" | "organiser") =>
                 setFormData({ ...formData, role: value })
               }
               disabled={isLoading}
@@ -172,9 +184,14 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
               </SelectContent>
             </Select>
           </div>
-          
+
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              disabled={isLoading}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
@@ -184,5 +201,5 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -3,10 +3,10 @@
 import { Mail, Calendar, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import type { User } from "./users-management";
+import type { UserWithRegistration } from "@/lib/queries/users";
 
 interface UsersCardsProps {
-  users: User[];
+  users: UserWithRegistration[];
 }
 
 const statusColors = {
@@ -68,7 +68,11 @@ export function UsersCards({ users }: UsersCardsProps) {
                     </a>
                   </div>
                   <Badge
-                    className={statusColors[user.eventStatus]}
+                    className={
+                      statusColors[
+                        user.eventStatus as keyof typeof statusColors
+                      ]
+                    }
                     variant="outline"
                   >
                     {user.eventStatus.charAt(0).toUpperCase() +

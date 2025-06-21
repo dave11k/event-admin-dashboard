@@ -46,31 +46,34 @@ export function AttendeeListModal({
   const { toast } = useToast();
 
   useEffect(() => {
+    const loadRegistrations = async () => {
+      if (!event) return;
+
+      setIsLoading(true);
+      try {
+        const data = await getEventRegistrationsAction(event.id);
+        setRegistrations(data);
+      } catch (error) {
+        console.error("Error loading registrations:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load event registrations",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     if (isOpen && event) {
       loadRegistrations();
     }
-  }, [isOpen, event]);
+  }, [isOpen, event, toast]);
 
-  const loadRegistrations = async () => {
-    if (!event) return;
-
-    setIsLoading(true);
-    try {
-      const data = await getEventRegistrationsAction(event.id);
-      setRegistrations(data);
-    } catch (error) {
-      console.error("Error loading registrations:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load event registrations",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleRemoveAttendee = async (registrationId: string, attendeeName: string) => {
+  const handleRemoveAttendee = async (
+    registrationId: string,
+    attendeeName: string,
+  ) => {
     setRemovingIds((prev) => new Set(prev).add(registrationId));
 
     try {
@@ -88,7 +91,7 @@ export function AttendeeListModal({
           description: `${attendeeName} has been removed from the event`,
         });
         setRegistrations((prev) =>
-          prev.filter((reg) => reg.id !== registrationId)
+          prev.filter((reg) => reg.id !== registrationId),
         );
         onAttendeeRemoved();
       }
@@ -111,7 +114,7 @@ export function AttendeeListModal({
   const filteredRegistrations = registrations.filter((registration) =>
     registration.attendee_name
       .toLowerCase()
-      .includes(searchQuery.toLowerCase())
+      .includes(searchQuery.toLowerCase()),
   );
 
   const handleClose = () => {
@@ -189,7 +192,9 @@ export function AttendeeListModal({
               <div className="p-8 text-center">
                 <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {searchQuery ? "No matching attendees" : "No registrations yet"}
+                  {searchQuery
+                    ? "No matching attendees"
+                    : "No registrations yet"}
                 </h3>
                 <p className="text-gray-600">
                   {searchQuery
@@ -201,8 +206,12 @@ export function AttendeeListModal({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="font-semibold">Attendee Name</TableHead>
-                    <TableHead className="font-semibold">Registration Date</TableHead>
+                    <TableHead className="font-semibold">
+                      Attendee Name
+                    </TableHead>
+                    <TableHead className="font-semibold">
+                      Registration Date
+                    </TableHead>
                     <TableHead className="font-semibold">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -213,7 +222,9 @@ export function AttendeeListModal({
                         {registration.attendee_name}
                       </TableCell>
                       <TableCell>
-                        {new Date(registration.registration_date).toLocaleDateString("en-US", {
+                        {new Date(
+                          registration.registration_date,
+                        ).toLocaleDateString("en-US", {
                           year: "numeric",
                           month: "short",
                           day: "numeric",
@@ -227,7 +238,10 @@ export function AttendeeListModal({
                           size="sm"
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           onClick={() =>
-                            handleRemoveAttendee(registration.id, registration.attendee_name)
+                            handleRemoveAttendee(
+                              registration.id,
+                              registration.attendee_name,
+                            )
                           }
                           disabled={removingIds.has(registration.id)}
                         >

@@ -26,7 +26,6 @@ export interface UserRegistrationStats {
   completedRegistrations: number;
 }
 
-
 // This function is deprecated as we've moved to direct attendee storage
 // instead of linking registrations to user profiles
 export async function getUsersWithRegistrations(): Promise<
@@ -41,17 +40,15 @@ export async function getUserRegistrationStats(): Promise<UserRegistrationStats>
   const supabase = await createClient();
 
   // Run all queries in parallel for better performance
-  const [
-    { count: totalUsers },
-    { count: totalRegistrations },
-  ] = await Promise.all([
-    // Total dashboard users (profiles)
-    supabase.from("profiles").select("*", { count: "exact", head: true }),
-    // Total event registrations (attendees)
-    supabase
-      .from("event_registrations")
-      .select("*", { count: "exact", head: true }),
-  ]);
+  const [{ count: totalUsers }, { count: totalRegistrations }] =
+    await Promise.all([
+      // Total dashboard users (profiles)
+      supabase.from("profiles").select("*", { count: "exact", head: true }),
+      // Total event registrations (attendees)
+      supabase
+        .from("event_registrations")
+        .select("*", { count: "exact", head: true }),
+    ]);
 
   return {
     totalUsers: totalUsers || 0,
