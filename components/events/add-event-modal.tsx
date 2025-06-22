@@ -29,9 +29,9 @@ import type { Event } from "./events-management";
 interface AddEventModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onEventCreated: (newEvent: Event) => void;
+  onEventCreated: () => void;
   editingEvent?: Event | null;
-  onEventUpdated?: (updatedEvent: Event) => void;
+  onEventUpdated?: () => void;
 }
 
 interface FormData {
@@ -184,45 +184,21 @@ export function AddEventModal({
       }
 
       if (isEditMode && editingEvent && onEventUpdated) {
-        // Create the updated event object
-        const updatedEvent: Event = {
-          ...editingEvent,
-          title: formData.title.trim(),
-          description: formData.description.trim() || null,
-          date: formData.date,
-          location: formData.location.trim(),
-          capacity: parseInt(formData.capacity),
-          price: parseFloat(formData.price.trim() || "0"),
-          status: formData.status,
-        };
-
         toast({
           title: "Event Updated Successfully",
           description: `${formData.title} has been updated.`,
         });
 
-        onEventUpdated(updatedEvent);
+        // Call parent to trigger close sequence
+        onEventUpdated?.();
       } else {
-        // Create the new event object for optimistic update
-        const newEvent: Event = {
-          id: result.data?.id || Date.now().toString(),
-          title: formData.title.trim(),
-          description: formData.description.trim() || null,
-          date: formData.date,
-          location: formData.location.trim(),
-          capacity: parseInt(formData.capacity),
-          price: parseFloat(formData.price.trim() || "0"),
-          status: formData.status,
-          registeredUsers: 0,
-          createdAt: new Date().toISOString().split("T")[0],
-        };
-
         toast({
           title: "Event Created Successfully",
           description: `${formData.title} has been added to your events.`,
         });
 
-        onEventCreated(newEvent);
+        // Call parent to trigger close sequence
+        onEventCreated();
       }
     } catch {
       toast({

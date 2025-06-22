@@ -110,11 +110,12 @@ export function EventsManagement({
     });
   }, [events, searchQuery, statusFilter]);
 
-  const handleEventCreated = (newEvent: Event) => {
-    setEvents((prev) => [newEvent, ...prev]);
-    // Close modal after a small delay to prevent flash
+  const handleEventCreated = () => {
+    // Close modal after a small delay to prevent flash  
     setTimeout(() => {
       setModalState({ isOpen: false, editingEvent: null });
+      // Refresh the page to get updated data
+      window.location.reload();
     }, 100);
   };
 
@@ -122,15 +123,12 @@ export function EventsManagement({
     setModalState({ isOpen: true, editingEvent: event });
   };
 
-  const handleEventUpdated = (updatedEvent: Event) => {
-    setEvents((prev) =>
-      prev.map((event) =>
-        event.id === updatedEvent.id ? updatedEvent : event,
-      ),
-    );
+  const handleEventUpdated = () => {
     // Close modal after a small delay to prevent flash
     setTimeout(() => {
       setModalState({ isOpen: false, editingEvent: null });
+      // Refresh the page to get updated data
+      window.location.reload();
     }, 100);
   };
 
