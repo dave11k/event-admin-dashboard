@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -33,10 +33,16 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState<string>("");
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
   const [isPending, startTransition] = useTransition();
+
+  // Set timestamp client-side only to prevent hydration mismatch
+  useEffect(() => {
+    setCurrentTime(new Date().toLocaleString("en-US"));
+  }, []);
 
   const handleNavigation = (href: string, e: React.MouseEvent) => {
     if (href === pathname) return;
@@ -188,7 +194,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </Button>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-500">
-                Last updated: {new Date().toLocaleString("en-US")}
+                Last updated: {currentTime || "Loading..."}
               </span>
             </div>
           </div>

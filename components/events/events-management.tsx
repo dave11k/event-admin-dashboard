@@ -111,7 +111,7 @@ export function EventsManagement({
   }, [events, searchQuery, statusFilter]);
 
   const handleEventCreated = () => {
-    // Close modal after a small delay to prevent flash  
+    // Close modal after a small delay to prevent flash
     setTimeout(() => {
       setModalState({ isOpen: false, editingEvent: null });
       // Refresh the page to get updated data
