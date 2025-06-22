@@ -20,7 +20,7 @@ export async function createEventAction(formData: FormData) {
   const capacity = parseInt(formData.get("capacity") as string);
   const price = parseFloat(formData.get("price") as string);
 
-  if (!title || !date || !capacity || !price) {
+  if (!title || !date || !capacity || price < 0 || isNaN(price)) {
     return { error: "Missing required fields" };
   }
 
@@ -53,7 +53,7 @@ export async function updateEventAction(eventId: string, formData: FormData) {
   const price = parseFloat(formData.get("price") as string);
   const status = formData.get("status") as EventStatus;
 
-  if (!title || !date || !capacity || !price) {
+  if (!title || !date || !capacity || price < 0 || isNaN(price)) {
     return { error: "Missing required fields" };
   }
 

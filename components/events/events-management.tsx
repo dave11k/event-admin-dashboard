@@ -31,6 +31,7 @@ export interface Event {
   date: string;
   location: string | null;
   capacity: number;
+  price: number;
   status: "upcoming" | "ongoing" | "completed" | "cancelled";
   registeredUsers: number;
   createdAt: string;
@@ -47,9 +48,10 @@ function convertToUIEvent(event: EventWithRegistrations): Event {
     id: event.id,
     title: event.title,
     description: event.description,
-    date: event.date,
+    date: event.date.split("T")[0],
     location: event.location,
     capacity: event.capacity,
+    price: event.price || 0,
     status: event.status,
     registeredUsers: event.registrationCount,
     createdAt: event.created_at.split("T")[0], // Format date

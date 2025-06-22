@@ -13,19 +13,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { toast } from "sonner";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setFormLoading(true);
 
     try {
       if (isSignUp) {
@@ -34,7 +36,7 @@ export default function LoginPage() {
           password,
         });
         if (error) throw error;
-        toast.success("Check your email for verification link!");
+        toast.success("Please check your email for confirmation link!");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -50,7 +52,56 @@ export default function LoginPage() {
         error instanceof Error ? error.message : "An unknown error occurred";
       toast.error(errorMessage);
     } finally {
-      setLoading(false);
+      setFormLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setDemoLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: "davidkiely97@yahoo.com",
+        password: "password",
+      });
+      if (error) throw error;
+
+      // Ensure demo user has a profile
+      if (data.user) {
+        const { error: profileError } = await supabase.from("profiles").upsert({
+          id: data.user.id,
+          email: "davidkiely97@yahoo.com",
+          full_name: "Demo User",
+          role: "admin",
+        });
+
+        if (profileError) {
+          console.error("Error creating demo profile:", profileError);
+          throw new Error("Failed to create demo profile");
+        }
+
+        // Verify profile was created successfully
+        const { data: profile, error: verifyError } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", data.user.id)
+          .single();
+
+        if (verifyError || !profile || profile.role !== "admin") {
+          console.error("Profile verification failed:", verifyError);
+          throw new Error("Failed to verify demo profile");
+        }
+      }
+
+      toast.success("Signed in to demo account!");
+      router.push("/dashboard");
+      router.refresh();
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      toast.error(errorMessage);
+    } finally {
+      setDemoLoading(false);
     }
   };
 
@@ -87,10 +138,42 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={formLoading || demoLoading}
+            >
+              {formLoading ? (
+                <div className="flex items-center gap-2">
+                  <LoadingSpinner size="sm" />
+                  {isSignUp ? "Creating Account..." : "Signing In..."}
+                </div>
+              ) : isSignUp ? (
+                "Sign Up"
+              ) : (
+                "Sign In"
+              )}
             </Button>
           </form>
+
+          <div className="mt-4">
+            <Button
+              onClick={handleDemoLogin}
+              variant="outline"
+              className="w-full bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300"
+              disabled={formLoading || demoLoading}
+            >
+              {demoLoading ? (
+                <div className="flex items-center gap-2">
+                  <LoadingSpinner size="sm" />
+                  Signing In...
+                </div>
+              ) : (
+                "Try Demo"
+              )}
+            </Button>
+          </div>
+
           <div className="mt-4 text-center">
             <Button
               variant="link"

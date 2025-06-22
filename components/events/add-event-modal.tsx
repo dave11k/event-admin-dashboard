@@ -81,10 +81,10 @@ export function AddEventModal({
       setFormData({
         title: editingEvent.title,
         description: editingEvent.description || "",
-        date: editingEvent.date,
+        date: editingEvent.date.split("T")[0],
         location: editingEvent.location || "",
         capacity: editingEvent.capacity.toString(),
-        price: "0", // We'll add price to Event interface later
+        price: editingEvent.price?.toString() || "0",
         status: editingEvent.status,
       });
     } else {
@@ -136,10 +136,8 @@ export function AddEventModal({
       }
     }
 
-    // Price validation
-    if (!formData.price) {
-      newErrors.price = "Price is required";
-    } else {
+    // Price validation - allow empty (defaults to 0) or 0 or greater
+    if (formData.price && formData.price.trim() !== "") {
       const price = Number.parseFloat(formData.price);
       if (isNaN(price) || price < 0) {
         newErrors.price = "Price must be 0 or greater";
@@ -166,7 +164,7 @@ export function AddEventModal({
       formDataObj.append("date", formData.date);
       formDataObj.append("location", formData.location.trim());
       formDataObj.append("capacity", formData.capacity);
-      formDataObj.append("price", formData.price);
+      formDataObj.append("price", formData.price.trim() || "0");
       formDataObj.append("status", formData.status);
 
       let result;
@@ -194,6 +192,7 @@ export function AddEventModal({
           date: formData.date,
           location: formData.location.trim(),
           capacity: parseInt(formData.capacity),
+          price: parseFloat(formData.price.trim() || "0"),
           status: formData.status,
         };
 
@@ -212,6 +211,7 @@ export function AddEventModal({
           date: formData.date,
           location: formData.location.trim(),
           capacity: parseInt(formData.capacity),
+          price: parseFloat(formData.price.trim() || "0"),
           status: formData.status,
           registeredUsers: 0,
           createdAt: new Date().toISOString().split("T")[0],
@@ -398,7 +398,7 @@ export function AddEventModal({
                 className="text-sm font-semibold text-gray-700 flex items-center gap-2"
               >
                 <DollarSign className="h-4 w-4" />
-                Price *
+                Price (optional)
               </Label>
               <Input
                 id="price"
@@ -406,7 +406,7 @@ export function AddEventModal({
                 step="0.01"
                 value={formData.price}
                 onChange={(e) => handleInputChange("price", e.target.value)}
-                placeholder="Enter ticket price"
+                placeholder="Enter ticket price (leave empty for free)"
                 className={
                   errors.price ? "border-red-500 focus:border-red-500" : ""
                 }
